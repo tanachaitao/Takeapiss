@@ -105,7 +105,7 @@
             <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
         </div>
 
-        <!-- SOS Emergency Quick Action -->
+        <!-- SOS Emergency Quick Action (คำนวณระยะทาง Haversine หาที่ใกล้ที่สุดจริง) -->
         <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all hover:bg-red-700">
             <div class="text-center sm:text-left">
                 <h2 class="text-lg sm:text-xl font-extrabold flex items-center justify-center sm:justify-start gap-2" id="sos-title">
@@ -113,8 +113,8 @@
                 </h2>
                 <p id="location-status" class="text-xs sm:text-sm text-red-100 mt-0.5">พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที</p>
             </div>
-            <button onclick="openGoogleMapsNavigation()" class="w-full sm:w-auto bg-white text-red-600 font-black text-base px-6 py-3.5 rounded-xl shadow-md hover:bg-red-50 transition cursor-pointer active:scale-95" id="sos-btn">
-                ⚡ นำทางด่วนผ่าน Google Maps!
+            <button onclick="openNearestGoogleMapsNavigation()" class="w-full sm:w-auto bg-white text-red-600 font-black text-base px-6 py-3.5 rounded-xl shadow-md hover:bg-red-50 transition cursor-pointer active:scale-95" id="sos-btn">
+                ⚡ นำทางไปห้องน้ำใกล้สุด!
             </button>
         </div>
 
@@ -148,7 +148,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V1.2 — Real-time Full Stack
+        Take a piss 🚻 Community V1.3 — Secure & Smart
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -280,6 +280,11 @@
             }
         });
 
+        // 🛡️ ป้องกัน XSS โดยการ Escape อักขระพิเศษ
+        window.esc = function(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        };
+
         window.saveToiletToFirebase = function() {
             const name = document.getElementById('new-name').value.trim();
             const rating = parseFloat(document.getElementById('new-rating').value);
@@ -292,6 +297,12 @@
                 return;
             }
 
+            // บังคับล็อกอินก่อนเขียนข้อมูลตามที่คุณเต๋าแนะนำ
+            if (!currentUser) {
+                alert("⚠️ กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ เพื่อความปลอดภัยของข้อมูลคอมมูนิตี้ครับ!");
+                return;
+            }
+
             const toiletsRef = ref(db, 'toilets');
             push(toiletsRef, {
                 name: name,
@@ -301,7 +312,7 @@
                 detail: detail || "ไม่มีรายละเอียดเพิ่มเติม",
                 lat: window.currentLat,
                 lng: window.currentLng,
-                addedBy: currentUser ? currentUser.displayName : "ผู้พิทักษ์นิรนาม",
+                addedBy: currentUser.displayName || "ผู้พิทักษ์",
                 timestamp: Date.now()
             }).then(() => {
                 alert("🎉 บันทึกข้อมูลห้องน้ำสำเร็จ! ขอบคุณผู้พิทักษ์ที่ร่วมแชร์ข้อมูลให้ทุกคนครับ 🙏");
@@ -385,7 +396,6 @@
                     updateLocationStatus(pos.lat, pos.lng);
                 });
 
-                // คลิกบนแผนที่แล้วหมุดขยับมาทันที (Click-to-Move)
                 map.on('click', function(e) {
                     const lat = e.latlng.lat;
                     const lng = e.latlng.lng;
@@ -400,7 +410,7 @@
             }
         }
 
-        // วาดหมุดห้องน้ำที่บันทึกแล้ว พร้อมใส่ Popup ข้อมูลครบถ้วน
+        // วาดหมุด พร้อมป้องกัน XSS ใน Popup
         window.renderSavedMarkers = function(toilets) {
             if (!savedMarkersLayer) return;
             savedMarkersLayer.clearLayers();
@@ -417,16 +427,16 @@
                     const m = L.marker([t.lat, t.lng], { icon: savedIcon }).addTo(savedMarkersLayer);
                     const popupContent = `
                         <div style="font-family: 'Prompt', sans-serif; min-width: 170px; padding: 4px;">
-                            <strong style="font-size: 14px; color: #0d9488;">${t.name}</strong><br>
+                            <strong style="font-size: 14px; color: #0d9488;">${esc(t.name)}</strong><br>
                             <div style="margin: 4px 0;">
                                 <span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">⭐ ${Number(t.rating).toFixed(1)} ดาว</span>
                             </div>
-                            <p style="font-size: 11px; color: #4b5563; margin: 4px 0;">💬 ${t.detail || '-'}</p>
+                            <p style="font-size: 11px; color: #4b5563; margin: 4px 0;">💬 ${esc(t.detail || '-')}</p>
                             <div style="font-size: 11px; margin: 6px 0; display: flex; gap: 4px;">
                                 <span style="background: ${t.bidet ? '#ccfbf1' : '#f3f4f6'}; color: ${t.bidet ? '#0f766e' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.bidet ? '💧มีสายฉีด' : '❌ไม่มีสายฉีด'}</span>
                                 <span style="background: ${t.tissue ? '#e0f2fe' : '#f3f4f6'}; color: ${t.tissue ? '#0369a1' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.tissue ? '🧻มีทิชชู่' : '❌ไม่มีทิชชู่'}</span>
                             </div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" style="display:block; text-align:center; margin-top:8px; background:#0d9488; color:white; padding:5px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">🧭 เปิดนำทาง Google Maps</a>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; margin-top:8px; background:#0d9488; color:white; padding:5px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">🧭 เปิดนำทาง Google Maps</a>
                         </div>
                     `;
                     m.bindPopup(popupContent);
@@ -451,8 +461,8 @@
                         <div class="flex items-start gap-2.5">
                             <span class="text-sm font-bold ${index === 0 ? 'text-amber-500' : 'text-gray-400'} mt-0.5">#${index + 1} 🚽</span>
                             <div>
-                                <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">${t.name}</h4>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">${t.detail}</p>
+                                <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">${esc(t.name)}</h4>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">${esc(t.detail)}</p>
                             </div>
                         </div>
                         <span class="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs font-bold px-2.5 py-1 rounded-lg shrink-0">⭐ ${Number(t.rating).toFixed(1)}</span>
@@ -470,7 +480,7 @@
                             <button onclick="map.setView([${t.lat}, ${t.lng}], 17);" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
                                 📍 ดูหมุด
                             </button>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
+                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
                                 🧭 นำทาง
                             </a>
                         </div>
@@ -519,27 +529,57 @@
                 () => {
                     statusText.innerText = lang === 'th' ? '❌ ไม่สามารถดึงตำแหน่งได้ กรุณาเปิด GPS' : '❌ Unable to get location';
                 },
-                { enableHighAccuracy: true }
+                { enableHighAccuracy: true, timeout: 10000 }
             );
         }
 
-        function openGoogleMapsNavigation() {
-            const lang = localStorage.getItem('lang') || 'th';
-            let targetLat = window.currentLat;
-            let targetLng = window.currentLng;
+        // 🧮 คำนวณระยะทางด้วยสูตร Haversine เพื่อหาห้องน้ำที่ใกล้ที่สุดจริง
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // รัศมีโลกหน่วยเป็นกิโลเมตร
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c; // ระยะทางหน่วย กิโลเมตร
+        }
 
-            if (window.allToilets && window.allToilets.length > 0) {
-                targetLat = window.allToilets[0].lat;
-                targetLng = window.allToilets[0].lng;
+        function deg2rad(deg) {
+            return deg * (Math.PI/180);
+        }
+
+        // ปุ่ม SOS คำนวณหาห้องน้ำที่ใกล้พิกัดผู้ใช้ที่สุดจริง
+        function openNearestGoogleMapsNavigation() {
+            const lang = localStorage.getItem('lang') || 'th';
+            
+            if (!window.allToilets || window.allToilets.length === 0) {
+                alert(lang === 'th' ? '⚠️ ยังไม่มีข้อมูลห้องน้ำในระบบ กรุณาเพิ่มห้องน้ำอย่างน้อย 1 แห่งก่อนครับ!' : 'No restrooms available.');
+                return;
             }
 
-            const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${targetLat},${targetLng}`;
-            window.open(gmapsUrl, '_blank');
+            // หาห้องน้ำที่ใกล้ที่สุดจาก window.currentLat, window.currentLng
+            let nearest = window.allToilets[0];
+            let minDistance = Infinity;
+
+            window.allToilets.forEach(t => {
+                if (t.lat && t.lng) {
+                    const dist = getDistanceFromLatLonInKm(window.currentLat, window.currentLng, t.lat, t.lng);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        nearest = t;
+                    }
+                }
+            });
+
+            const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`;
+            window.open(gmapsUrl, '_blank', 'noopener,noreferrer');
 
             setTimeout(() => {
                 const ok = confirm(lang === 'th' 
-                    ? '🎉 คุณปลดทุกข์สบายตัวแล้วใช่ไหม?\nกด OK เพื่อช่วยแชร์เว็บนี้ให้เพื่อนผู้พิทักษ์คนอื่นได้ใช้งานต่อ!' 
-                    : '🎉 Feeling relieved now?\nPress OK to share this app with fellow guardians!');
+                    ? `🎉 พุ่งตัวไปที่ "${nearest.name}" สำเร็จ!\nคุณสบายตัวแล้วใช่ไหม? กด OK เพื่อแชร์เว็บให้เพื่อนต่อ!` 
+                    : `🎉 Reached destination! Share app with friends?`);
                 if (ok) {
                     if (navigator.share) {
                         navigator.share({
@@ -549,7 +589,7 @@
                         }).catch(() => {});
                     } else {
                         navigator.clipboard.writeText(window.location.href);
-                        alert(lang === 'th' ? '📋 คัดลอกลิงก์เรียบร้อย! นำไปวางแชร์ให้เพื่อนในแชทได้เลยครับ 🙏' : '📋 Link copied to clipboard!');
+                        alert(lang === 'th' ? '📋 คัดลอกลิงก์สำเร็จแล้ว!' : '📋 Link copied!');
                     }
                 }
             }, 2500);
@@ -601,7 +641,7 @@
                 pinBtn: "ตำแหน่งปัจจุบันของฉัน",
                 addBtn: "เพิ่มห้องน้ำที่หมุดนี้",
                 sosTitle: "🚨 ปวดฉุกเฉินด่วน!",
-                sosBtn: "⚡ นำทางด่วนผ่าน Google Maps!",
+                sosBtn: "⚡ นำทางไปห้องน้ำใกล้สุด!",
                 rankingTitle: "🏆 จัดอันดับห้องน้ำยอดเยี่ยม (ข้อมูลจริง)",
                 reportBtn: "+ เพิ่มห้องน้ำ"
             },
@@ -614,7 +654,7 @@
                 pinBtn: "My Current Location",
                 addBtn: "Add at This Pin",
                 sosTitle: "🚨 Emergency SOS!",
-                sosBtn: "⚡ Navigate via Google Maps!",
+                sosBtn: "⚡ Navigate to Nearest!",
                 rankingTitle: "🏆 Top Rated Restrooms (Live Data)",
                 reportBtn: "+ Add Restroom"
             }
