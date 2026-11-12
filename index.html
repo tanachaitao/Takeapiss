@@ -148,7 +148,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V1.1 — Real-time Beta
+        Take a piss 🚻 Community V1.2 — Real-time Full Stack
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -221,10 +221,10 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Firebase SDKs (Auth + Realtime Database) -->
+    <!-- Firebase SDKs & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -242,17 +242,19 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
         let currentUser = null;
 
-        getRedirectResult(auth).catch((error) => console.error("Redirect Error:", error));
-
         window.handleLogin = function() {
-            if (window.innerWidth >= 768) {
-                signInWithPopup(auth, provider).catch(() => signInWithRedirect(auth, provider));
-            } else {
-                signInWithRedirect(auth, provider);
-            }
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    console.log("ล็อกอินสำเร็จ:", result.user.displayName);
+                })
+                .catch((error) => {
+                    console.error("Login Error:", error);
+                    alert("❌ ล็อกอินไม่สำเร็จ (" + error.code + ")\nกรุณาตรวจสอบว่าไม่ได้เปิดเว็บผ่านแอป LINE/Facebook หรือปิดตัวบล็อกป๊อปอัปครับ");
+                });
         };
 
         window.handleLogout = function() {
@@ -383,7 +385,7 @@
                     updateLocationStatus(pos.lat, pos.lng);
                 });
 
-                // ฟังก์ชันคลิกบนแผนที่เพื่อให้หมุดย้ายมาทันที (Click-to-Move)
+                // คลิกบนแผนที่แล้วหมุดขยับมาทันที (Click-to-Move)
                 map.on('click', function(e) {
                     const lat = e.latlng.lat;
                     const lng = e.latlng.lng;
@@ -398,7 +400,7 @@
             }
         }
 
-        // วาดหมุดห้องน้ำที่บันทึกแล้ว พร้อมใส่ Popup บอกคะแนน, สายฉีด, ทิชชู่
+        // วาดหมุดห้องน้ำที่บันทึกแล้ว พร้อมใส่ Popup ข้อมูลครบถ้วน
         window.renderSavedMarkers = function(toilets) {
             if (!savedMarkersLayer) return;
             savedMarkersLayer.clearLayers();
@@ -413,8 +415,6 @@
             toilets.forEach(t => {
                 if (t.lat && t.lng) {
                     const m = L.marker([t.lat, t.lng], { icon: savedIcon }).addTo(savedMarkersLayer);
-                    
-                    // เมื่อคลิกที่หมุดเก่า จะแสดง Popup รายละเอียดคะแนน สิ่งอำนวยความสะดวก และปุ่มนำทาง
                     const popupContent = `
                         <div style="font-family: 'Prompt', sans-serif; min-width: 170px; padding: 4px;">
                             <strong style="font-size: 14px; color: #0d9488;">${t.name}</strong><br>
