@@ -28,7 +28,7 @@
     <header class="bg-teal-600 dark:bg-teal-800 text-white shadow-md sticky top-0 z-50 transition-colors duration-200">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-base sm:text-lg font-bold flex items-center gap-2">
-                <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-8 h-8 rounded-full border border-teal-400 object-cover shadow">
+                <span class="text-xl">🚻</span>
                 <span id="brand-name">Take a piss 🚻</span>
             </h1>
             <div class="flex items-center gap-2">
@@ -52,9 +52,11 @@
     <!-- Main Container -->
     <main class="max-w-2xl mx-auto w-full p-4 flex-1 flex flex-col gap-4">
         
-        <!-- Welcome Banner with Mascot -->
+        <!-- Welcome Banner (ใช้ไอคอนส้วมแทนมาสคอต) -->
         <div class="bg-teal-50 dark:bg-gray-800 border border-teal-100 dark:border-gray-700 p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm transition-colors duration-200">
-            <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow object-cover border-2 border-teal-500 shrink-0">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-3xl shadow-inner shrink-0 border border-teal-200 dark:border-teal-800">
+                🚽
+            </div>
             <div>
                 <h2 class="text-teal-900 dark:text-teal-300 font-bold text-sm sm:text-base" id="welcome-title">สวัสดีครับคุณเต๋าและผู้พิทักษ์ทั้งหลาย! 👋</h2>
                 <p class="text-xs sm:text-sm text-teal-700 dark:text-gray-300" id="welcome-desc">พื้นที่ทดสอบระบบ ช่วยกันส่งข้อมูลรีวิวและแจ้งบั๊กให้เต๋าได้เลยนะคร้าบ</p>
@@ -73,7 +75,7 @@
             </button>
         </div>
 
-        <!-- Interactive Map Section (แสดงแผนที่พร้อมหมุด) -->
+        <!-- Interactive Map Section -->
         <div class="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
             <div id="map"></div>
         </div>
@@ -107,21 +109,23 @@
         Take a piss 🚻 Community V0.1 — Developed by Tao
     </footer>
 
-    <!-- Leaflet JS สำหรับสร้างแผนที่ -->
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs & Config (ใส่ค่าจริงจากหน้า Firebase ของคุณเต๋าแล้ว) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
+            apiKey: "AIzaSyC4XJ5TNkLBevKdks3FTa3zS1W67GMUD98",
             authDomain: "toilet-reviewer.firebaseapp.com",
+            databaseURL: "https://toilet-reviewer-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "toilet-reviewer",
-            storageBucket: "toilet-reviewer.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            storageBucket: "toilet-reviewer.firebasestorage.app",
+            messagingSenderId: "103550991249",
+            appId: "1:103550991249:web:6790a49482b1512158b830",
+            measurementId: "G-HM578T1GYC"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -170,7 +174,7 @@
         let map;
         let marker;
 
-        function initMap(lat = 13.7563, lng = 100.5018) { // ค่าเริ่มต้น กรุงเทพฯ
+        function initMap(lat = 13.7563, lng = 100.5018) {
             if (!map) {
                 map = L.map('map').setView([lat, lng], 15);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -179,7 +183,6 @@
                 }).addTo(map);
                 marker = L.marker([lat, lng], { draggable: true }).addTo(map);
                 
-                // อัปเดตพิกัดเมื่อลากหมุด
                 marker.on('dragend', function(event) {
                     const position = marker.getLatLng();
                     updateLocationStatus(position.lat, position.lng);
@@ -200,7 +203,6 @@
             }
         }
 
-        // โหลดแผนที่เริ่มต้นตอนเปิดเว็บ
         window.addEventListener('DOMContentLoaded', () => {
             initMap();
             loadLanguage();
@@ -211,7 +213,6 @@
             }
         });
 
-        // ฟังก์ชันดึงพิกัด GPS จริงจากมือถือ
         function getCurrentLocation() {
             const statusText = document.getElementById('location-status');
             const lang = localStorage.getItem('lang') || 'th';
@@ -298,7 +299,6 @@
             document.getElementById('welcome-desc').innerText = t.welcomeDesc;
         }
 
-        // Dark Mode Toggle
         function toggleDarkMode() {
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
