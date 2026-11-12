@@ -12,6 +12,17 @@
     <style>
         body { font-family: 'Prompt', sans-serif; }
         #map { height: 240px; width: 100%; border-radius: 1rem; z-index: 10; }
+        /* สไตล์หมุดรูปชักโครก 🚽 บนแผนที่ */
+        .toilet-marker-icon {
+            background: #0d9488;
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 18px;
+            line-height: 32px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
     </style>
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -27,7 +38,7 @@
     <header class="bg-teal-600 dark:bg-teal-800 text-white shadow-md sticky top-0 z-50 transition-colors duration-200">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-base sm:text-lg font-bold flex items-center gap-2">
-                <span class="text-xl">🚻</span>
+                <span class="text-xl">🚽</span>
                 <span id="brand-name">Take a piss 🚻</span>
             </h1>
             <div class="flex items-center gap-2">
@@ -106,11 +117,10 @@
             </div>
             
             <div class="flex flex-col gap-2.5">
-                <!-- รายการที่ 1 -->
                 <div class="bg-gray-50 dark:bg-gray-900 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 flex flex-col gap-2">
                     <div class="flex justify-between items-start">
                         <div class="flex items-center gap-2.5">
-                            <span class="text-base font-bold text-amber-500">#1 🚹</span>
+                            <span class="text-base font-bold text-amber-500">#1 🚽</span>
                             <div>
                                 <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">ปั๊ม ปตท. สาขาหลัก</h4>
                                 <p class="text-[11px] text-gray-400">ห่างจากคุณ 250 ม. • แอร์เย็นฉ่ำ นั่งสบาย</p>
@@ -124,11 +134,10 @@
                     </div>
                 </div>
 
-                <!-- รายการที่ 2 -->
                 <div class="bg-gray-50 dark:bg-gray-900 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 flex flex-col gap-2">
                     <div class="flex justify-between items-start">
                         <div class="flex items-center gap-2.5">
-                            <span class="text-base font-bold text-gray-400">#2 🇼</span>
+                            <span class="text-base font-bold text-gray-400">#2 🚽</span>
                             <div>
                                 <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">ห้างสรรพสินค้าโซน A (ชั้น 2)</h4>
                                 <p class="text-[11px] text-gray-400">ห่างจากคุณ 480 ม. • กว้างขวาง สะอาดเอี่ยม</p>
@@ -156,7 +165,7 @@
     <!-- Firebase SDKs & Config -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC4XJ5TNkLBevKdks3FTa3zS1W67GMUD98",
@@ -173,16 +182,21 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        getRedirectResult(auth).then((result) => {
-            if (result.user) {
-                console.log("Login Success:", result.user);
-            }
-        }).catch((error) => {
+        getRedirectResult(auth).catch((error) => {
             console.error("Login Redirect Error:", error);
         });
 
         window.handleLogin = function() {
-            signInWithRedirect(auth, provider);
+            if (window.innerWidth >= 768) {
+                signInWithPopup(auth, provider).then((result) => {
+                    alert('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับผู้พิทักษ์ ' + result.user.displayName);
+                }).catch((error) => {
+                    console.error("Popup Login Error:", error);
+                    signInWithRedirect(auth, provider);
+                });
+            } else {
+                signInWithRedirect(auth, provider);
+            }
         };
 
         window.handleLogout = function() {
@@ -211,7 +225,7 @@
     </script>
 
     <script>
-        // --- ระบบแผนที่ (Leaflet Map พร้อมหมุดรูปส้วม 🚹🇼) ---
+        // --- ระบบแผนที่ พร้อมหมุดรูปชักโครก 🚽 ---
         let map;
         let marker;
         let currentLat = 13.7563;
@@ -221,9 +235,10 @@
             currentLat = lat;
             currentLng = lng;
             
+            // ใช้ไอคอนรูปชักโครก 🚽 สำหรับปักหมุดบนแผนที่
             const toiletIcon = L.divIcon({
                 className: 'custom-toilet-marker',
-                html: '<div style="background-color: #0d9488; color: white; padding: 6px 8px; border-radius: 50%; font-size: 16px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid white;">🚹🇼</div>',
+                html: '<div class="toilet-marker-icon">🚽</div>',
                 iconSize: [36, 36],
                 iconAnchor: [18, 18]
             });
@@ -292,7 +307,7 @@
             );
         }
 
-        // --- ปุ่มนำทางด่วน พุ่งไป Google Maps จริง + Popup หลังถึงที่หมาย ---
+        // --- ปุ่มนำทางด่วน Google Maps + Popup รีวิวหลังถึง ---
         function openGoogleMapsNavigation() {
             const lang = localStorage.getItem('lang') || 'th';
             
