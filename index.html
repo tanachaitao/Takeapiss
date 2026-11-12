@@ -10,67 +10,81 @@
     <style>
         body { font-family: 'Prompt', sans-serif; }
     </style>
+    <script>
+        // ตรวจสอบ Dark Mode ตั้งแต่โหลดหน้าเว็บ
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
 
     <!-- Header / Navbar -->
-    <header class="bg-teal-600 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-base font-bold flex items-center gap-2">
-                <span class="text-xl">🚽🧢</span>
+    <header class="bg-teal-600 dark:bg-teal-800 text-white shadow-md sticky top-0 z-50 transition-colors duration-200">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-base sm:text-lg font-bold flex items-center gap-2">
+                <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-8 h-8 rounded-full border border-teal-400 object-cover shadow">
                 <span>Take a piss 🚻</span>
             </h1>
-            <div id="auth-section" class="flex items-center gap-2">
-                <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition cursor-pointer">
-                    เข้าสู่ระบบ
+            <div class="flex items-center gap-2">
+                <!-- ปุ่มสลับ Dark Mode -->
+                <button onclick="toggleDarkMode()" class="bg-teal-700 dark:bg-teal-900 text-white p-2 rounded-full shadow hover:bg-teal-800 transition cursor-pointer" title="สลับโหมดมืด/สว่าง">
+                    <span id="dark-icon">🌙</span>
                 </button>
+                <div id="auth-section">
+                    <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-full shadow hover:bg-teal-50 transition cursor-pointer">
+                        เข้าสู่ระบบ
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-md mx-auto w-full p-4 flex-1 flex flex-col gap-4">
+    <!-- Main Container (รองรับทั้งมือถือและจอคอมพิวเตอร์) -->
+    <main class="max-w-2xl mx-auto w-full p-4 flex-1 flex flex-col gap-4">
         
-        <!-- Welcome Banner -->
-        <div class="bg-teal-50 border border-teal-100 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
-            <div class="text-3xl bg-white p-2.5 rounded-2xl shadow-inner border border-teal-200">🚽🧢</div>
+        <!-- Welcome Banner with Mascot -->
+        <div class="bg-teal-50 dark:bg-gray-800 border border-teal-100 dark:border-gray-700 p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm transition-colors duration-200">
+            <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow object-cover border-2 border-teal-500 shrink-0">
             <div>
-                <h2 class="text-teal-900 font-bold text-sm">สวัสดีครับคุณเต๋าและเพื่อนๆ! 👋</h2>
-                <p class="text-xs text-teal-700">ช่วยกันรีวิวห้องน้ำสะอาดหรือแจ้งบั๊กได้เลยนะคร้าบ</p>
+                <h2 class="text-teal-900 dark:text-teal-300 font-bold text-sm sm:text-base">สวัสดีครับคุณเต๋าและผู้พิทักษ์ทั้งหลาย! 👋</h2>
+                <p class="text-xs sm:text-sm text-teal-700 dark:text-gray-300">ช่วยกันรีวิวห้องน้ำสะอาดหรือแจ้งบั๊กได้เลยนะคร้าบ</p>
             </div>
         </div>
 
         <!-- Search & Filter Section -->
-        <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
-            <input type="text" id="search-box" placeholder="ค้นหาห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500">
-            <button onclick="searchLocation()" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-teal-700 transition cursor-pointer">ค้นหา</button>
+        <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex gap-2 transition-colors duration-200">
+            <input type="text" id="search-box" placeholder="ค้นหาห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
+            <button onclick="searchLocation()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer">ค้นหา</button>
         </div>
 
         <!-- SOS Emergency Quick Action -->
-        <div class="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+        <div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-4 rounded-2xl flex items-center justify-between shadow-sm transition-colors duration-200">
             <div>
-                <h2 class="text-red-700 font-bold text-sm">🚨 ปวดฉุกเฉินด่วน!</h2>
-                <p class="text-xs text-red-500">ค้นหาห้องน้ำใกล้ที่สุดในรัศมี 1 กม.</p>
+                <h2 class="text-red-700 dark:text-red-400 font-bold text-sm sm:text-base">🚨 ปวดฉุกเฉินด่วน!</h2>
+                <p class="text-xs text-red-500 dark:text-red-300">ค้นหาห้องน้ำใกล้ที่สุดในรัศมี 1 กม.</p>
             </div>
-            <button onclick="findNearestToilet()" class="bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow hover:bg-red-700 transition cursor-pointer">
+            <button onclick="findNearestToilet()" class="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow transition cursor-pointer">
                 นำทางด่วน
             </button>
         </div>
 
         <!-- Toilet List Container -->
         <div class="flex-1 flex flex-col gap-3">
-            <h2 class="text-sm font-bold text-gray-600">ห้องน้ำแนะนำใกล้คุณ</h2>
+            <h2 class="text-sm font-bold text-gray-600 dark:text-gray-400">ห้องน้ำแนะนำใกล้คุณ</h2>
             
-            <div id="toilet-list" class="flex flex-col gap-3">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
+            <div id="toilet-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between gap-3 transition-colors duration-200">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm">ปั๊มน้ำมัน ปตท. สาขาพระราม 6</h3>
-                            <p class="text-xs text-gray-400">ห่างจากคุณ 350 เมตร • สะอาดมาก</p>
+                            <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm">ปั๊มน้ำมัน ปตท. สาขาพระราม 6</h3>
+                            <p class="text-xs text-gray-400 dark:text-gray-400 mt-0.5">ห่างจากคุณ 350 เมตร • สะอาดมาก</p>
                         </div>
-                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-lg">⭐ 4.8</span>
+                        <span class="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs font-bold px-2.5 py-1 rounded-lg">⭐ 4.8</span>
                     </div>
-                    <button onclick="openReviewModal('ปั๊มน้ำมัน ปตท. สาขาพระราม 6')" class="mt-1 bg-teal-50 text-teal-700 text-xs font-semibold py-2 rounded-xl hover:bg-teal-100 transition text-center cursor-pointer">
+                    <button onclick="openReviewModal('ปั๊มน้ำมัน ปตท. สาขาพระราม 6')" class="bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 text-xs font-semibold py-2 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/50 transition text-center cursor-pointer">
                         เขียนรีวิว / ให้คะแนน
                     </button>
                 </div>
@@ -78,19 +92,19 @@
         </div>
 
         <!-- Feedback / Bug Report Box -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
-            <h3 class="text-xs font-bold text-gray-700 flex items-center gap-1">
-                <span>💬</span> ส่งฟีดแบ็ก / แจ้งบั๊กให้เต๋า
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-2 transition-colors duration-200">
+            <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                <span>💬</span> ส่งฟีดแบ็ก / แจ้งบั๊กให้ผู้พิทักษ์เต๋า
             </h3>
-            <textarea id="feedback-input" placeholder="เจอตรงไหนพัง หรืออยากให้เพิ่มอะไร พิมพ์บอกได้เลย..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-500 resize-none h-20"></textarea>
-            <button onclick="sendFeedback()" class="bg-gray-800 text-white text-xs font-medium py-2 rounded-xl hover:bg-black transition cursor-pointer">
+            <textarea id="feedback-input" placeholder="เจอตรงไหนพัง หรืออยากให้เพิ่มอะไร พิมพ์บอกได้เลย..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-500 resize-none h-20 text-gray-800 dark:text-gray-100"></textarea>
+            <button onclick="sendFeedback()" class="bg-gray-800 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white text-xs font-medium py-2 rounded-xl transition cursor-pointer">
                 ส่งข้อความหาผู้พัฒนา
             </button>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-gray-400">
+    <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
         Take a piss 🚻 Community V0.1 — Developed by Tao
     </footer>
 
@@ -135,7 +149,7 @@
                 `;
             } else {
                 authSection.innerHTML = `
-                    <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition cursor-pointer">
+                    <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs sm:text-sm font-semibold px-3.5 py-1.5 rounded-full shadow hover:bg-teal-50 transition cursor-pointer">
                         เข้าสู่ระบบ
                     </button>
                 `;
@@ -144,6 +158,28 @@
     </script>
 
     <script>
+        // ฟังก์ชันสลับ Dark Mode และบันทึกค่าลง localStorage
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                document.getElementById('dark-icon').innerText = '🌙';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                document.getElementById('dark-icon').innerText = '☀️';
+            }
+        }
+
+        // เซ็ตไอคอนเริ่มต้นตามธีมปัจจุบัน
+        window.addEventListener('DOMContentLoaded', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.getElementById('dark-icon').innerText = '☀️';
+            } else {
+                document.getElementById('dark-icon').innerText = '🌙';
+            }
+        });
+
         function searchLocation() {
             const query = document.getElementById('search-box').value;
             alert('กำลังค้นหา: ' + (query || 'กรุณาใส่คำค้นหา'));
