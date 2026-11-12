@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; }
-        #map { height: 250px; width: 100%; border-radius: 1rem; z-index: 10; }
+        #map { height: 260px; width: 100%; border-radius: 1rem; z-index: 10; cursor: pointer; }
         .toilet-marker-icon {
             background: #0d9488;
             color: white;
@@ -79,7 +79,7 @@
             </div>
             <div>
                 <h2 class="text-teal-900 dark:text-teal-300 font-bold text-sm sm:text-base" id="welcome-title">สวัสดีผู้พิทักษ์ความสะอาดทุกคน! 👋</h2>
-                <p class="text-xs sm:text-sm text-teal-700 dark:text-gray-300" id="welcome-desc">ร่วมกันค้นหา รีวิว และปักหมุดห้องน้ำสะอาดเพื่อคอมมูนิตี้ของเรา</p>
+                <p class="text-xs sm:text-sm text-teal-700 dark:text-gray-300" id="welcome-desc">คลิกบนแผนที่เพื่อย้ายหมุด หรือเพิ่มห้องน้ำสะอาดเพื่อคอมมูนิตี้ของเรา</p>
             </div>
         </div>
 
@@ -91,10 +91,10 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>📍</span> <span id="pin-btn-text">ปักหมุดตำแหน่งฉัน</span>
+                    <span>📍</span> <span id="pin-btn-text">ตำแหน่งปัจจุบันของฉัน</span>
                 </button>
                 <button onclick="openAddModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>➕</span> <span id="add-btn-text">เพิ่มห้องน้ำใหม่</span>
+                    <span>➕</span> <span id="add-btn-text">เพิ่มห้องน้ำที่หมุดนี้</span>
                 </button>
             </div>
         </div>
@@ -102,7 +102,7 @@
         <!-- Interactive Map Section -->
         <div class="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
             <div id="map"></div>
-            <p class="text-[11px] text-gray-400 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 ลากหมุดสีเขียว 🚽 เพื่อเลือกตำแหน่งที่ต้องการเพิ่มห้องน้ำได้</p>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
         </div>
 
         <!-- SOS Emergency Quick Action -->
@@ -125,17 +125,16 @@
                     <span>🏆</span> จัดอันดับห้องน้ำยอดเยี่ยม (ข้อมูลจริง)
                 </h3>
                 <button onclick="openAddModal()" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="report-btn">
-                    + เพิ่มห้องน้ำตรงหมุด
+                    + เพิ่มห้องน้ำ
                 </button>
             </div>
             
-            <!-- รายการห้องน้ำที่ดึงมาจาก Firebase Realtime Database -->
             <div id="toilet-list" class="flex flex-col gap-2.5">
                 <div class="text-center py-6 text-xs text-gray-400">🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล...</div>
             </div>
         </div>
 
-        <!-- ปุ่มแจ้งบั๊ก / ส่งฟีดแบ็ก (ด้านล่างสุดตามคำขอ) -->
+        <!-- ปุ่มแจ้งบั๊ก / ส่งฟีดแบ็ก -->
         <div class="bg-gray-100 dark:bg-gray-800/80 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="text-center sm:text-left">
                 <h4 class="text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200" id="fb-banner-title">🛠️ เจอบั๊ก หรือมีไอเดียอยากแนะนำ?</h4>
@@ -149,7 +148,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V1.0 — Real-time Beta
+        Take a piss 🚻 Community V1.1 — Real-time Beta
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -193,7 +192,7 @@
                     <textarea id="new-detail" placeholder="เช่น แอร์เย็นฉ่ำ, สะอาดมาก, คนน้อย, ต้องแลกเหรียญ..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 h-20 resize-none focus:outline-none focus:border-teal-500"></textarea>
                 </div>
 
-                <p class="text-[11px] text-teal-600 dark:text-teal-400" id="modal-coords-text">📍 พิกัดที่จะบันทึก: อิงตามหมุดสีเขียวบนแผนที่</p>
+                <p class="text-[11px] text-teal-600 dark:text-teal-400" id="modal-coords-text">📍 พิกัดที่จะบันทึก: อิงตามหมุดบนแผนที่</p>
             </div>
 
             <div class="flex gap-2 mt-2">
@@ -279,7 +278,6 @@
             }
         });
 
-        // --- บันทึกห้องน้ำใหม่ลง Firebase Realtime Database ---
         window.saveToiletToFirebase = function() {
             const name = document.getElementById('new-name').value.trim();
             const rating = parseFloat(document.getElementById('new-rating').value);
@@ -309,11 +307,10 @@
                 document.getElementById('new-detail').value = '';
                 window.closeAddModal();
             }).catch((error) => {
-                alert("❌ เกิดข้อผิดพลาดในการบันทึก: " + error.message + "\n(อย่าลืมเปิด Rules ใน Firebase Realtime Database เป็น true นะครับ)");
+                alert("❌ เกิดข้อผิดพลาดในการบันทึก: " + error.message);
             });
         };
 
-        // --- บันทึกฟีดแบ็ก / แจ้งบั๊กลง Firebase ---
         window.submitFeedbackToFirebase = function() {
             const text = document.getElementById('feedback-text').value.trim();
             if (!text) {
@@ -335,7 +332,6 @@
             });
         };
 
-        // --- ดึงข้อมูลห้องน้ำทั้งหมดมาแสดงผลแบบ Real-time ทั้งบนลิสต์และแผนที่ ---
         const toiletsRef = ref(db, 'toilets');
         onValue(toiletsRef, (snapshot) => {
             const data = snapshot.val();
@@ -344,7 +340,6 @@
                 Object.keys(data).forEach((key) => {
                     window.allToilets.push({ id: key, ...data[key] });
                 });
-                // เรียงตามคะแนนดาวสูงสุดก่อน
                 window.allToilets.sort((a, b) => b.rating - a.rating);
             }
             window.renderToiletList(window.allToilets);
@@ -353,7 +348,6 @@
     </script>
 
     <script>
-        // --- ระบบแผนที่ Leaflet ---
         let map;
         let userMarker;
         let savedMarkersLayer;
@@ -388,13 +382,23 @@
                     window.currentLng = pos.lng;
                     updateLocationStatus(pos.lat, pos.lng);
                 });
+
+                // ฟังก์ชันคลิกบนแผนที่เพื่อให้หมุดย้ายมาทันที (Click-to-Move)
+                map.on('click', function(e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    window.currentLat = lat;
+                    window.currentLng = lng;
+                    userMarker.setLatLng([lat, lng]);
+                    updateLocationStatus(lat, lng);
+                });
             } else {
                 map.setView([lat, lng], 15);
                 userMarker.setLatLng([lat, lng]);
             }
         }
 
-        // วาดหมุดห้องน้ำที่ถูกบันทึกไว้ในฐานข้อมูลลงบนแผนที่
+        // วาดหมุดห้องน้ำที่บันทึกแล้ว พร้อมใส่ Popup บอกคะแนน, สายฉีด, ทิชชู่
         window.renderSavedMarkers = function(toilets) {
             if (!savedMarkersLayer) return;
             savedMarkersLayer.clearLayers();
@@ -409,25 +413,33 @@
             toilets.forEach(t => {
                 if (t.lat && t.lng) {
                     const m = L.marker([t.lat, t.lng], { icon: savedIcon }).addTo(savedMarkersLayer);
-                    m.bindPopup(`
-                        <div style="font-family: 'Prompt', sans-serif; min-width: 140px;">
-                            <strong style="font-size: 13px;">${t.name}</strong><br>
-                            <span style="color: #d97706; font-weight: bold;">⭐ ${t.rating.toFixed(1)}</span> • 
-                            <span>${t.bidet ? '💧มีสายฉีด' : '❌ไม่มีสายฉีด'}</span><br>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" style="display:inline-block; margin-top:6px; background:#0d9488; color:white; padding:3px 8px; border-radius:6px; text-decoration:none; font-size:11px;">🧭 นำทางไปที่นี่</a>
+                    
+                    // เมื่อคลิกที่หมุดเก่า จะแสดง Popup รายละเอียดคะแนน สิ่งอำนวยความสะดวก และปุ่มนำทาง
+                    const popupContent = `
+                        <div style="font-family: 'Prompt', sans-serif; min-width: 170px; padding: 4px;">
+                            <strong style="font-size: 14px; color: #0d9488;">${t.name}</strong><br>
+                            <div style="margin: 4px 0;">
+                                <span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">⭐ ${Number(t.rating).toFixed(1)} ดาว</span>
+                            </div>
+                            <p style="font-size: 11px; color: #4b5563; margin: 4px 0;">💬 ${t.detail || '-'}</p>
+                            <div style="font-size: 11px; margin: 6px 0; display: flex; gap: 4px;">
+                                <span style="background: ${t.bidet ? '#ccfbf1' : '#f3f4f6'}; color: ${t.bidet ? '#0f766e' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.bidet ? '💧มีสายฉีด' : '❌ไม่มีสายฉีด'}</span>
+                                <span style="background: ${t.tissue ? '#e0f2fe' : '#f3f4f6'}; color: ${t.tissue ? '#0369a1' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.tissue ? '🧻มีทิชชู่' : '❌ไม่มีทิชชู่'}</span>
+                            </div>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" style="display:block; text-align:center; margin-top:8px; background:#0d9488; color:white; padding:5px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">🧭 เปิดนำทาง Google Maps</a>
                         </div>
-                    `);
+                    `;
+                    m.bindPopup(popupContent);
                 }
             });
         };
 
-        // แสดงรายการห้องน้ำในหน้าเว็บ
         window.renderToiletList = function(toilets) {
             const listEl = document.getElementById('toilet-list');
             if (!toilets || toilets.length === 0) {
                 listEl.innerHTML = `
                     <div class="text-center py-6 bg-gray-50 dark:bg-gray-900 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">ยังไม่มีข้อมูลห้องน้ำในระบบ กดปุ่ม <strong>"+ เพิ่มห้องน้ำใหม่"</strong> เพื่อประเดิมหมุดแรกได้เลย!</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">ยังไม่มีข้อมูลห้องน้ำในระบบ คลิกบนแผนที่หรือกด <strong>"+ เพิ่มห้องน้ำ"</strong> เพื่อประเดิมหมุดแรกได้เลย!</p>
                     </div>
                 `;
                 return;
@@ -454,15 +466,19 @@
                                 ${t.tissue ? '🧻 มีทิชชู่' : '❌ ไม่มีทิชชู่'}
                             </span>
                         </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
-                            <span>🧭 นำทาง</span>
-                        </a>
+                        <div class="flex items-center gap-3">
+                            <button onclick="map.setView([${t.lat}, ${t.lng}], 17);" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                                📍 ดูหมุด
+                            </button>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
+                                🧭 นำทาง
+                            </a>
+                        </div>
                     </div>
                 </div>
             `).join('');
         };
 
-        // ค้นหากรองชื่อห้องน้ำ
         function filterToilets() {
             const q = document.getElementById('search-box').value.toLowerCase().trim();
             if (!q) {
@@ -507,13 +523,11 @@
             );
         }
 
-        // เปิด Google Maps นำทางด่วน + ถามฟีดแบ็กหลังใช้งาน
         function openGoogleMapsNavigation() {
             const lang = localStorage.getItem('lang') || 'th';
             let targetLat = window.currentLat;
             let targetLng = window.currentLng;
 
-            // ถ้ามีข้อมูลห้องน้ำในระบบ ให้พาไปห้องน้ำอันดับ 1 (หรือที่ใกล้ที่สุด)
             if (window.allToilets && window.allToilets.length > 0) {
                 targetLat = window.allToilets[0].lat;
                 targetLng = window.allToilets[0].lng;
@@ -541,7 +555,6 @@
             }, 2500);
         }
 
-        // ควบคุม Modal เพิ่มห้องน้ำ
         window.openAddModal = function() {
             document.getElementById('modal-coords-text').innerText = `📍 พิกัดที่จะบันทึก: ${window.currentLat.toFixed(5)}, ${window.currentLng.toFixed(5)}`;
             const m = document.getElementById('add-modal');
@@ -554,7 +567,6 @@
             m.classList.remove('flex');
         };
 
-        // ควบคุม Modal แจ้งบั๊ก/ฟีดแบ็ก
         window.openFeedbackModal = function() {
             const m = document.getElementById('feedback-modal');
             m.classList.remove('hidden');
@@ -566,7 +578,6 @@
             m.classList.remove('flex');
         };
 
-        // ระบบ Dark Mode
         function toggleDarkMode() {
             const html = document.documentElement;
             if (html.classList.contains('dark')) {
@@ -580,33 +591,32 @@
             }
         }
 
-        // ระบบสลับภาษา TH / EN
         const translations = {
             th: {
                 brand: "Take a piss 🚻",
                 welcomeTitle: "สวัสดีผู้พิทักษ์ความสะอาดทุกคน! 👋",
-                welcomeDesc: "ร่วมกันค้นหา รีวิว และปักหมุดห้องน้ำสะอาดเพื่อคอมมูนิตี้ของเรา",
+                welcomeDesc: "คลิกบนแผนที่เพื่อย้ายหมุด หรือเพิ่มห้องน้ำสะอาดเพื่อคอมมูนิตี้ของเรา",
                 searchPlaceholder: "ค้นหาชื่อห้องน้ำ, ห้าง, ปั๊มน้ำมัน...",
                 searchBtn: "ค้นหา",
-                pinBtn: "ปักหมุดตำแหน่งฉัน",
-                addBtn: "เพิ่มห้องน้ำใหม่",
+                pinBtn: "ตำแหน่งปัจจุบันของฉัน",
+                addBtn: "เพิ่มห้องน้ำที่หมุดนี้",
                 sosTitle: "🚨 ปวดฉุกเฉินด่วน!",
                 sosBtn: "⚡ นำทางด่วนผ่าน Google Maps!",
                 rankingTitle: "🏆 จัดอันดับห้องน้ำยอดเยี่ยม (ข้อมูลจริง)",
-                reportBtn: "+ เพิ่มห้องน้ำตรงหมุด"
+                reportBtn: "+ เพิ่มห้องน้ำ"
             },
             en: {
                 brand: "Take a piss 🚻",
                 welcomeTitle: "Hello Guardians! 👋",
-                welcomeDesc: "Find, review, and pin clean restrooms for our community.",
+                welcomeDesc: "Click map to move pin or add restrooms for our community.",
                 searchPlaceholder: "Search restrooms, malls, gas stations...",
                 searchBtn: "Search",
-                pinBtn: "Pin My Location",
-                addBtn: "Add Restroom",
+                pinBtn: "My Current Location",
+                addBtn: "Add at This Pin",
                 sosTitle: "🚨 Emergency SOS!",
                 sosBtn: "⚡ Navigate via Google Maps!",
                 rankingTitle: "🏆 Top Rated Restrooms (Live Data)",
-                reportBtn: "+ Add Here"
+                reportBtn: "+ Add Restroom"
             }
         };
 
