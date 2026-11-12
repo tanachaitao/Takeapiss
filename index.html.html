@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take a piss 🚻 v0.1 - ศูนย์บรรเทาทุกข์</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; transition: background-color 0.3s, color 0.3s; }
+        .app-container { max-width: 750px; margin: 0 auto; }
+        
+        /* 💧 ส่วนหัวและโปรไฟล์ผู้ใช้ / อวตาร */
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex-wrap: wrap; gap: 10px; }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
+        .mascot-avatar { width: 45px; height: 45px; background: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; position: relative; box-shadow: 0 2px 8px rgba(0,123,255,0.4); }
+        .mascot-avatar::after { content: '🧢T'; position: absolute; top: -6px; right: -6px; font-size: 11px; background: #ff9800; color: white; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
+        .brand-title h1 { margin: 0; color: #007bff; font-size: 22px; text-align: left; }
+        .brand-title p { margin: 0; color: #666; font-size: 12px; }
+
+        .user-auth-box { display: flex; align-items: center; gap: 10px; }
+        .user-profile { display: flex; align-items: center; gap: 8px; }
+        .user-avatar-img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #007bff; }
+        .user-info { font-size: 12px; text-align: right; }
+        .user-info .name { font-weight: bold; display: block; }
+        .user-info .rank { color: #28a745; font-weight: bold; }
+        
+        .btn-auth { background: #4285F4; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .btn-auth:hover { background: #3367D6; }
+        .btn-logout { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 2px; }
+
+        /* 🚨 ปุ่ม SOS ฉุกเฉิน */
+        .btn-sos {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff3b30, #d32f2f);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-sos:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 59, 48, 0.6); }
+
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 25px; transition: background-color 0.3s, box-shadow 0.3s; }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background-color: #fff; color: #333; }
+        
+        #map { 
+            width: 100%; 
+            height: 350px; 
+            border-radius: 8px; 
+            border: 2px solid #007bff; 
+            margin-bottom: 8px;
+            background-color: #e5e3df; 
+        }
+        
+        .map-hint { font-size: 12px; color: #666; margin-bottom: 10px; text-align: center; }
+        
+        .btn-gps { 
+            background-color: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%; 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+        }
+        .btn-gps:hover { background-color: #218838; }
+
+        .btn-submit { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-submit:hover { background-color: #0056b3; }
+        
+        /* 🐛 ปุ่มเปิดฟอร์มแจ้งบั๊ก (ลอยอยู่มุมล่างขวา) */
+        .feedback-float-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .feedback-float-btn:hover { background: #5a6268; }
+
+        /* Modal สำหรับแจ้งบั๊ก */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none; border: none;
+            font-size: 18px; cursor: pointer; color: #888;
+        }
+
+        .toilet-item { background: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: background-color 0.3s; }
+        .toilet-info h3 { margin: 0 0 5px 0; color: #222; }
+        .toilet-info p { margin: 0; color: #666; font-size: 14px; }
+        .tags-display { font-size: 12px; color: #007bff; margin-top: 4px; font-weight: bold; }
+        .stars { color: #ffc107; font-size: 18px; font-weight: bold; }
+        .actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .btn-gmap { background-color: #ff9800; color: white; text-decoration: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .btn-delete { background: #ff4d4d; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        /* 🌙 Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #121212; color: #e0e0e0; }
+            .header-box, .card, .toilet-item, .modal-content { background: #1e1e1e; color: #e0e0e0; box-shadow: 0 4px 12px rgba(255,255,255,0.03); }
+            .brand-title p { color: #aaa; }
+            input, select, textarea { background-color: #2c2c2c; color: #fff; border-color: #444; }
+            .toilet-info h3 { color: #fff; }
+            .toilet-info p { color: #bbb; }
+            .map-hint { color: #aaa; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- ส่วนหัวโปรไฟล์และมาสคอต -->
+    <div class="header-box">
+        <div class="brand-area">
+            <div class="mascot-avatar">💧</div>
+            <div class="brand-title">
+                <h1>Take a piss 🚻 <span style="font-size: 12px; color: #ff9800;">v0.1</span></h1>
+                <p>ศูนย์บรรเทาทุกข์ เรียลไทม์</p>
+            </div>
+        </div>
+        <div class="user-auth-box" id="authContainer">
+            <button class="btn-auth" onclick="loginWithGoogle()">🔑 เข้าสู่ระบบ Google</button>
+        </div>
+    </div>
+
+    <!-- 🚨 ปุ่ม SOS ฉุกเฉิน -->
+    <button type="button" class="btn-sos" onclick="findNearestToilet()">
+        🚨 SOS! หาห้องน้ำที่ใกล้ที่สุด (นำทางด่วน)
+    </button>
+    
+    <div class="card">
+        <h2>เพิ่มจุดห้องน้ำใหม่</h2>
+        <form id="toiletForm">
+            <div class="form-group">
+                <label>ชื่อสถานที่</label>
+                <input type="text" id="locationName" placeholder="เช่น ปั๊ม ปตท. สาขา..." required>
+            </div>
+            <div class="form-group">
+                <label>ประเภทห้องน้ำ</label>
+                <select id="toiletType">
+                    <option value="🚹 ห้องน้ำชาย">🚹 ห้องน้ำชาย</option>
+                    <option value="🚺 ห้องน้ำหญิง">🚺 ห้องน้ำหญิง</option>
+                    <option value="🚻 ห้องน้ำรวม / Unisex">🚻 ห้องน้ำรวม / Unisex</option>
+                    <option value="♿ ห้องน้ำผู้พิการ">♿ ห้องน้ำผู้พิการ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>สิ่งอำนวยความสะดวก</label>
+                <div style="display: flex; gap: 15px; font-size: 14px; margin-top: 5px;">
+                    <label><input type="checkbox" id="hasTissue" value="🧻 มีทิชชู่"> 🧻 มีทิชชู่</label>
+                    <label><input type="checkbox" id="hasBidet" value="💦 มีสายฉีดชำระ"> 💦 มีสายฉีด</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>📍 ปักหมุดบนแผนที่ หรือ ใช้ GPS</label>
+                <button type="button" class="btn-gps" onclick="getLocation()">🛰️ ดึงพิกัดตำแหน่งปัจจุบันของฉัน (GPS)</button>
+                <div id="map"></div>
+                <div class="map-hint">💡 คลิกบนแผนที่เพื่อปักหมุดตำแหน่งห้องน้ำที่ต้องการ</div>
+                <input type="hidden" id="lat" required>
+                <input type="hidden" id="lng" required>
+            </div>
+            <div class="form-group">
+                <label>ให้คะแนนความสะอาด</label>
+                <select id="rating">
+                    <option value="5">⭐⭐⭐⭐⭐ (สะอาดไร้ที่ติ)</option>
+                    <option value="4">⭐⭐⭐⭐ (ดี ปลอดภัย)</option>
+                    <option value="3">⭐⭐⭐ (ปานกลาง พอใช้ได้)</option>
+                    <option value="2">⭐⭐ (ควรปรับปรุง)</option>
+                    <option value="1">⭐ (แย่มาก อย่าเข้า!)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>รีวิวเพิ่มเติม</label>
+                <textarea id="reviewComment" rows="2" placeholder="เช่น สะอาดดี มีแม่บ้านดูแล"></textarea>
+            </div>
+            <button type="submit" class="btn-submit">บันทึกข้อมูลห้องน้ำ</button>
+        </form>
+    </div>
+    
+    <h2>รายการและจุดห้องน้ำทั้งหมด</h2>
+    <div id="toiletList"><p style="text-align:center; color:#888;">กำลังโหลดข้อมูลห้องน้ำ...</p></div>
+</div>
+
+<!-- 🐛 ปุ่มลอยสำหรับแจ้งบั๊ก / ฟีดแบ็ก -->
+<button class="feedback-float-btn" onclick="openFeedbackModal()">
+    💬 แจ้งบั๊ก / เสนอแนะ
+</button>
+
+<!-- Modal หน้าต่างฟอร์มแจ้งบั๊ก -->
+<div class="modal-overlay" id="feedbackModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeFeedbackModal()">✖</button>
+        <h3 style="margin-top:0; color:#007bff;">💬 แจ้งบั๊ก หรือ ติชมระบบ</h3>
+        <p style="font-size: 13px; color: #666;">พบปัญหาการใช้งาน ฟีเจอร์พัง หรือมีไอเดียอยากเสนอแนะ แจ้งทีมงานได้เลยครับ!</p>
+        <form id="feedbackForm">
+            <div class="form-group">
+                <label>ประเภทข้อความ</label>
+                <select id="feedbackType">
+                    <option value="🐛 แจ้งบั๊ก/ระบบมีปัญหา">🐛 แจ้งบั๊ก/ระบบมีปัญหา</option>
+                    <option value="💡 เสนอแนะฟีเจอร์ใหม่">💡 เสนอแนะฟีเจอร์ใหม่</option>
+                    <option value="⭐ ติชมทั่วไป">⭐ ติชมทั่วไป</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>รายละเอียด</label>
+                <textarea id="feedbackText" rows="3" placeholder="ระบุรายละเอียดปัญหาหรือข้อเสนอแนะของคุณ..." required></textarea>
+            </div>
+            <button type="submit" class="btn-submit" id="feedbackSubmitBtn">ส่งข้อเสนอแนะ</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC4XJ5TNkLBevKdks3FTa3zS1W67GMUD98",
+        authDomain: "toilet-reviewer.firebaseapp.com",
+        databaseURL: "https://toilet-reviewer-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "toilet-reviewer",
+        storageBucket: "toilet-reviewer.firebasestorage.app",
+        messagingSenderId: "103550991249",
+        appId: "1:103550991249:web:6790a49482b1512158b830",
+        measurementId: "G-HM578T1GYC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const toiletsRef = ref(db, 'toilets');
+    const feedbacksRef = ref(db, 'feedbacks'); // โหนดเก็บข้อมูลแจ้งบั๊กใน Firebase
+
+    let currentUser = null;
+    let allToiletsData = [];
+
+    // จัดการระบบ Login Google
+    const provider = new GoogleAuthProvider();
+    window.loginWithGoogle = function() {
+        signInWithPopup(auth, provider).catch((error) => {
+            alert("Login ไม่สำเร็จ: " + error.message);
+        });
+    }
+
+    window.logoutUser = function() {
+        signOut(auth);
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        const authContainer = document.getElementById('authContainer');
+        if (user) {
+            authContainer.innerHTML = `
+                <div class="user-profile">
+                    <img src="${user.photoURL || 'https://via.placeholder.com/36'}" class="user-avatar-img">
+                    <div class="user-info">
+                        <span class="name">${user.displayName}</span>
+                        <span class="rank">🌱 Level 1: หน่วยสำรวจฝึกหัด</span>
+                        <button class="btn-logout" onclick="logoutUser()">ออกจากระบบ</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            authContainer.innerHTML = `<button class="btn-auth" onclick="loginWithGoogle()">🔑 เข้าสู่ระบบ Google</button>`;
+        }
+    });
+
+    // ควบคุม Modal แจ้งบั๊ก
+    window.openFeedbackModal = function() {
+        document.getElementById('feedbackModal').style.display = 'flex';
+    }
+    window.closeFeedbackModal = function() {
+        document.getElementById('feedbackModal').style.display = 'none';
+    }
+
+    // ส่งฟีดแบ็กขึ้น Firebase
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const type = document.getElementById('feedbackType').value;
+        const text = document.getElementById('feedbackText').value;
+        const btn = document.getElementById('feedbackSubmitBtn');
+
+        btn.disabled = true;
+        btn.innerText = 'กำลังส่งข้อมูล...';
+
+        push(feedbacksRef, {
+            type,
+            text,
+            sender: currentUser ? currentUser.displayName : 'Guest (ผู้เยี่ยมชม)',
+            senderEmail: currentUser ? currentUser.email : 'N/A',
+            createdAt: new Date().toISOString()
+        }).then(() => {
+            alert('ขอบคุณสำหรับฟีดแบ็กครับ! เราได้รับข้อมูลเรียบร้อยแล้ว 🙏');
+            this.reset();
+            closeFeedbackModal();
+        }).catch(err => {
+            alert('เกิดข้อผิดพลาด: ' + err.message);
+        }).finally(() => {
+            btn.disabled = false;
+            btn.innerText = 'ส่งข้อเสนอแนะ';
+        });
+    });
+
+    const map = L.map('map').setView([13.7563, 100.5018], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+    setTimeout(function() { map.invalidateSize(); }, 500);
+
+    let tempMarker = null;
+    let savedMarkersLayer = L.layerGroup().addTo(map);
+
+    map.on('click', function(e) { setNewPin(e.latlng.lat, e.latlng.lng); });
+
+    window.setNewPin = function(lat, lng) {
+        if (tempMarker) map.removeLayer(tempMarker);
+        tempMarker = L.marker([lat, lng]).addTo(map);
+        document.getElementById('lat').value = lat;
+        document.getElementById('lng').value = lng;
+    }
+
+    window.getLocation = function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                map.setView([lat, lng], 16);
+                window.setNewPin(lat, lng);
+            }, function() { alert('ไม่สามารถดึงพิกัดได้'); }, { enableHighAccuracy: true });
+        }
+    }
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    window.findNearestToilet = function() {
+        if (allToiletsData.length === 0) { alert('ยังไม่มีข้อมูลห้องน้ำในระบบครับ!'); return; }
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            let nearest = null, minDistance = Infinity;
+            allToiletsData.forEach(t => {
+                const dist = getDistanceKm(userLat, userLng, t.lat, t.lng);
+                if (dist < minDistance) { minDistance = dist; nearest = t; }
+            });
+            if (nearest) {
+                const distText = minDistance < 1 ? `${Math.round(minDistance * 1000)} เมตร` : `${minDistance.toFixed(2)} กม.`;
+                if (confirm(`🎯 พบห้องน้ำใกล้ที่สุด!\n📍 ${nearest.name}\n📏 ระยะห่าง: ${distText}\n\nกด "ตกลง" เพื่อเปิด Google Maps นำทาง`)) {
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${nearest.lat},${nearest.lng}`, '_blank');
+                }
+            }
+        }, function() { alert('กรุณาเปิด GPS บนมือถือครับ'); }, { enableHighAccuracy: true });
+    }
+
+    window.deleteToilet = function(key) {
+        if (confirm("ต้องการลบจุดห้องน้ำนี้ใช่หรือไม่?")) {
+            remove(ref(db, 'toilets/' + key)).catch(err => alert(err.message));
+        }
+    }
+
+    onValue(toiletsRef, (snapshot) => {
+        const listDiv = document.getElementById('toiletList');
+        listDiv.innerHTML = '';
+        savedMarkersLayer.clearLayers();
+        allToiletsData = [];
+
+        const data = snapshot.val();
+        if (!data) {
+            listDiv.innerHTML = '<p style="text-align:center; color:#888;">ยังไม่มีจุดห้องน้ำ มาประเดิมปักหมุดแรกกันเลย!</p>';
+            return;
+        }
+
+        Object.keys(data).reverse().forEach((key) => {
+            const toilet = data[key];
+            allToiletsData.push({ id: key, ...toilet });
+
+            L.marker([toilet.lat, toilet.lng]).addTo(savedMarkersLayer)
+                .bindPopup(`<b>${toilet.name}</b><br>${toilet.type || ''}<br>คะแนน: ${'⭐'.repeat(toilet.rating)}`);
+
+            const item = document.createElement('div');
+            item.className = 'toilet-item';
+            item.innerHTML = `
+                <div class="toilet-info">
+                    <h3>${toilet.name}</h3>
+                    <div style="font-size: 13px; color: #007bff; font-weight: bold;">${toilet.type || '🚹 ห้องน้ำทั่วไป'}</div>
+                    <div class="stars">${'⭐'.repeat(toilet.rating)} (${toilet.rating}/5)</div>
+                    <p>${toilet.comment || 'ไม่มีคำรีวิว'}</p>
+                    <div class="tags-display">${toilet.tags ? toilet.tags.join(' | ') : ''}</div>
+                    <div style="font-size: 11px; color: #888; margin-top: 4px;">ผู้รีวิว: ${toilet.author || 'Guest'}</div>
+                </div>
+                <div class="actions">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${toilet.lat},${toilet.lng}" target="_blank" class="btn-gmap">🗺️ นำทาง</a>
+                    <button class="btn-delete" onclick="deleteToilet('${key}')">ลบ</button>
+                </div>
+            `;
+            listDiv.appendChild(item);
+        });
+    });
+
+    document.getElementById('toiletForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('locationName').value;
+        const type = document.getElementById('toiletType').value;
+        const lat = parseFloat(document.getElementById('lat').value);
+        const lng = parseFloat(document.getElementById('lng').value);
+        const rating = parseInt(document.getElementById('rating').value);
+        const comment = document.getElementById('reviewComment').value;
+        
+        let tags = [];
+        if (document.getElementById('hasTissue').checked) tags.push('🧻 มีทิชชู่');
+        if (document.getElementById('hasBidet').checked) tags.push('💦 มีสายฉีด');
+
+        if (!lat || !lng) { alert('กรุณาเลือกพิกัดบนแผนที่หรือกด GPS ก่อนครับ'); return; }
+
+        const btn = document.querySelector('.btn-submit');
+        btn.disabled = true; btn.innerText = 'กำลังบันทึก...';
+
+        push(toiletsRef, {
+            name, type, lat, lng, rating, comment, tags,
+            author: currentUser ? currentUser.displayName : 'Guest (ผู้เยี่ยมชม)',
+            authorId: currentUser ? currentUser.uid : 'guest',
+            createdAt: new Date().toISOString()
+        }).then(() => {
+            if (tempMarker) map.removeLayer(tempMarker);
+            this.reset();
+            document.getElementById('lat').value = '';
+            document.getElementById('lng').value = '';
+            alert('บันทึกข้อมูลห้องน้ำเรียบร้อย!');
+        }).catch(err => {
+            alert('เกิดข้อผิดพลาด: ' + err.message);
+        }).finally(() => {
+            btn.disabled = false; btn.innerText = 'บันทึกข้อมูลห้องน้ำ';
+        });
+    });
+</script>
+</body>
+</html>
