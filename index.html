@@ -17,12 +17,11 @@
     <header class="bg-teal-600 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-base font-bold flex items-center gap-2">
-                <!-- มาสคอตประจำเว็บ -->
-                <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-8 h-8 rounded-full border border-teal-400 object-cover shadow">
+                <span class="text-xl">🚽🧢</span>
                 <span>Take a piss 🚻</span>
             </h1>
             <div id="auth-section" class="flex items-center gap-2">
-                <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition">
+                <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition cursor-pointer">
                     เข้าสู่ระบบ
                 </button>
             </div>
@@ -32,9 +31,9 @@
     <!-- Main Content -->
     <main class="max-w-md mx-auto w-full p-4 flex-1 flex flex-col gap-4">
         
-        <!-- Welcome Banner with Mascot -->
+        <!-- Welcome Banner -->
         <div class="bg-teal-50 border border-teal-100 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
-            <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-14 h-14 rounded-2xl shadow object-cover border-2 border-teal-500">
+            <div class="text-3xl bg-white p-2.5 rounded-2xl shadow-inner border border-teal-200">🚽🧢</div>
             <div>
                 <h2 class="text-teal-900 font-bold text-sm">สวัสดีครับคุณเต๋าและเพื่อนๆ! 👋</h2>
                 <p class="text-xs text-teal-700">ช่วยกันรีวิวห้องน้ำสะอาดหรือแจ้งบั๊กได้เลยนะคร้าบ</p>
@@ -44,7 +43,7 @@
         <!-- Search & Filter Section -->
         <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
             <input type="text" id="search-box" placeholder="ค้นหาห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500">
-            <button onclick="searchLocation()" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-teal-700 transition">ค้นหา</button>
+            <button onclick="searchLocation()" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-teal-700 transition cursor-pointer">ค้นหา</button>
         </div>
 
         <!-- SOS Emergency Quick Action -->
@@ -53,7 +52,7 @@
                 <h2 class="text-red-700 font-bold text-sm">🚨 ปวดฉุกเฉินด่วน!</h2>
                 <p class="text-xs text-red-500">ค้นหาห้องน้ำใกล้ที่สุดในรัศมี 1 กม.</p>
             </div>
-            <button onclick="findNearestToilet()" class="bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow hover:bg-red-700 transition">
+            <button onclick="findNearestToilet()" class="bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow hover:bg-red-700 transition cursor-pointer">
                 นำทางด่วน
             </button>
         </div>
@@ -71,20 +70,20 @@
                         </div>
                         <span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-lg">⭐ 4.8</span>
                     </div>
-                    <button onclick="openReviewModal('ปั๊มน้ำมัน ปตท. สาขาพระราม 6')" class="mt-1 bg-teal-50 text-teal-700 text-xs font-semibold py-2 rounded-xl hover:bg-teal-100 transition text-center">
+                    <button onclick="openReviewModal('ปั๊มน้ำมัน ปตท. สาขาพระราม 6')" class="mt-1 bg-teal-50 text-teal-700 text-xs font-semibold py-2 rounded-xl hover:bg-teal-100 transition text-center cursor-pointer">
                         เขียนรีวิว / ให้คะแนน
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Feedback / Bug Report Box for Friends -->
+        <!-- Feedback / Bug Report Box -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
             <h3 class="text-xs font-bold text-gray-700 flex items-center gap-1">
                 <span>💬</span> ส่งฟีดแบ็ก / แจ้งบั๊กให้เต๋า
             </h3>
             <textarea id="feedback-input" placeholder="เจอตรงไหนพัง หรืออยากให้เพิ่มอะไร พิมพ์บอกได้เลย..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-500 resize-none h-20"></textarea>
-            <button onclick="sendFeedback()" class="bg-gray-800 text-white text-xs font-medium py-2 rounded-xl hover:bg-black transition">
+            <button onclick="sendFeedback()" class="bg-gray-800 text-white text-xs font-medium py-2 rounded-xl hover:bg-black transition cursor-pointer">
                 ส่งข้อความหาผู้พัฒนา
             </button>
         </div>
@@ -131,12 +130,12 @@
                 authSection.innerHTML = `
                     <div class="flex items-center gap-2">
                         <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="Avatar" class="w-8 h-8 rounded-full border border-white object-cover shadow">
-                        <button onclick="handleLogout()" class="text-[10px] text-white bg-red-500 px-2 py-1 rounded-lg hover:bg-red-600">ออก</button>
+                        <button onclick="handleLogout()" class="text-[10px] text-white bg-red-500 px-2 py-1 rounded-lg hover:bg-red-600 cursor-pointer">ออก</button>
                     </div>
                 `;
             } else {
                 authSection.innerHTML = `
-                    <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition">
+                    <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition cursor-pointer">
                         เข้าสู่ระบบ
                     </button>
                 `;
@@ -147,7 +146,7 @@
     <script>
         function searchLocation() {
             const query = document.getElementById('search-box').value;
-            alert('กำลังค้นหา: ' + query);
+            alert('กำลังค้นหา: ' + (query || 'กรุณาใส่คำค้นหา'));
         }
         function findNearestToilet() {
             alert('🚨 กำลังเปิดระบบนำทางไปห้องน้ำที่ใกล้ที่สุด!');
