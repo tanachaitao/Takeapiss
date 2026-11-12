@@ -54,17 +54,23 @@
             </div>
         </div>
 
-        <!-- Search & Filter Section -->
-        <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex gap-2 transition-colors duration-200">
-            <input type="text" id="search-box" placeholder="ค้นหาห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
-            <button onclick="searchLocation()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer">ค้นหา</button>
+        <!-- Search & GPS Pinpoint Section -->
+        <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-2 transition-colors duration-200">
+            <div class="flex flex-1 gap-2">
+                <input type="text" id="search-box" placeholder="ค้นหาห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
+                <button onclick="searchLocation()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer">ค้นหา</button>
+            </div>
+            <!-- ปุ่มตรวจจับตำแหน่ง GPS มือถือ -->
+            <button onclick="getCurrentLocation()" class="bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/50 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>📍</span> <span>ปักหมุดตำแหน่งฉัน</span>
+            </button>
         </div>
 
         <!-- SOS Emergency Quick Action -->
         <div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-4 rounded-2xl flex items-center justify-between shadow-sm transition-colors duration-200">
             <div>
                 <h2 class="text-red-700 dark:text-red-400 font-bold text-sm sm:text-base">🚨 ปวดฉุกเฉินด่วน!</h2>
-                <p class="text-xs text-red-500 dark:text-red-300">ค้นหาห้องน้ำใกล้ที่สุดในรัศมี 1 กม.</p>
+                <p id="location-status" class="text-xs text-red-500 dark:text-red-300">ค้นหาห้องน้ำใกล้ที่สุดในรัศมี 1 กม. จากตำแหน่งปัจจุบัน</p>
             </div>
             <button onclick="findNearestToilet()" class="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow transition cursor-pointer">
                 นำทางด่วน
@@ -171,7 +177,6 @@
             }
         }
 
-        // เซ็ตไอคอนเริ่มต้นตามธีมปัจจุบัน
         window.addEventListener('DOMContentLoaded', () => {
             if (document.documentElement.classList.contains('dark')) {
                 document.getElementById('dark-icon').innerText = '☀️';
@@ -180,12 +185,36 @@
             }
         });
 
+        // ฟังก์ชันดึงพิกัดปัจจุบันจากมือถือ / GPS
+        function getCurrentLocation() {
+            const statusText = document.getElementById('location-status');
+            if (!navigator.geolocation) {
+                alert('เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่งครับ');
+                return;
+            }
+            statusText.innerText = '🔄 กำลังค้นหาตำแหน่งของคุณจากสัญญาณมือถือ/GPS...';
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    statusText.innerText = `✅ ปักหมุดสำเร็จ! พิกัด: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    alert(`ปักหมุดตำแหน่งสำเร็จ!\nละติจูด: ${lat}\nลองจิจูด: ${lng}`);
+                },
+                (error) => {
+                    statusText.innerText = '❌ ไม่สามารถดึงตำแหน่งได้ กรุณาเปิดสิทธิ์ GPS';
+                    alert('ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาตรวจสอบการอนุญาต Location บนมือถือของคุณครับ');
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
         function searchLocation() {
             const query = document.getElementById('search-box').value;
             alert('กำลังค้นหา: ' + (query || 'กรุณาใส่คำค้นหา'));
         }
         function findNearestToilet() {
-            alert('🚨 กำลังเปิดระบบนำทางไปห้องน้ำที่ใกล้ที่สุด!');
+            alert('🚨 กำลังเปิดระบบนำทางด่วนไปห้องน้ำที่ใกล้ที่สุดจากพิกัดของคุณ!');
         }
         function openReviewModal(toiletName) {
             alert('✍️ เปิดหน้าเขียนรีวิวสำหรับ: ' + toiletName);
