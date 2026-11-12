@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take a piss 🚻 - ค้นหาและรีวิวห้องน้ำสาธารณะ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-teal-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-base font-bold flex items-center gap-2">
+                <!-- มาสคอตประจำเว็บ -->
+                <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-8 h-8 rounded-full border border-teal-400 object-cover shadow">
+                <span>Take a piss 🚻</span>
+            </h1>
+            <div id="auth-section" class="flex items-center gap-2">
+                <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-md mx-auto w-full p-4 flex-1 flex flex-col gap-4">
+        
+        <!-- Welcome Banner with Mascot -->
+        <div class="bg-teal-50 border border-teal-100 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
+            <img src="https://i.ibb.co/3m9R9p7/ai-generated.jpg" alt="Mascot" class="w-14 h-14 rounded-2xl shadow object-cover border-2 border-teal-500">
+            <div>
+                <h2 class="text-teal-900 font-bold text-sm">สวัสดีครับคุณเต๋าและเพื่อนๆ! 👋</h2>
+                <p class="text-xs text-teal-700">ช่วยกันรีวิวห้องน้ำสะอาดหรือแจ้งบั๊กได้เลยนะคร้าบ</p>
+            </div>
+        </div>
+
+        <!-- Search & Filter Section -->
+        <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
+            <input type="text" id="search-box" placeholder="ค้นหาห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500">
+            <button onclick="searchLocation()" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-teal-700 transition">ค้นหา</button>
+        </div>
+
+        <!-- SOS Emergency Quick Action -->
+        <div class="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+                <h2 class="text-red-700 font-bold text-sm">🚨 ปวดฉุกเฉินด่วน!</h2>
+                <p class="text-xs text-red-500">ค้นหาห้องน้ำใกล้ที่สุดในรัศมี 1 กม.</p>
+            </div>
+            <button onclick="findNearestToilet()" class="bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow hover:bg-red-700 transition">
+                นำทางด่วน
+            </button>
+        </div>
+
+        <!-- Toilet List Container -->
+        <div class="flex-1 flex flex-col gap-3">
+            <h2 class="text-sm font-bold text-gray-600">ห้องน้ำแนะนำใกล้คุณ</h2>
+            
+            <div id="toilet-list" class="flex flex-col gap-3">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm">ปั๊มน้ำมัน ปตท. สาขาพระราม 6</h3>
+                            <p class="text-xs text-gray-400">ห่างจากคุณ 350 เมตร • สะอาดมาก</p>
+                        </div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-lg">⭐ 4.8</span>
+                    </div>
+                    <button onclick="openReviewModal('ปั๊มน้ำมัน ปตท. สาขาพระราม 6')" class="mt-1 bg-teal-50 text-teal-700 text-xs font-semibold py-2 rounded-xl hover:bg-teal-100 transition text-center">
+                        เขียนรีวิว / ให้คะแนน
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback / Bug Report Box for Friends -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
+            <h3 class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                <span>💬</span> ส่งฟีดแบ็ก / แจ้งบั๊กให้เต๋า
+            </h3>
+            <textarea id="feedback-input" placeholder="เจอตรงไหนพัง หรืออยากให้เพิ่มอะไร พิมพ์บอกได้เลย..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-teal-500 resize-none h-20"></textarea>
+            <button onclick="sendFeedback()" class="bg-gray-800 text-white text-xs font-medium py-2 rounded-xl hover:bg-black transition">
+                ส่งข้อความหาผู้พัฒนา
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-gray-400">
+        Take a piss 🚻 Community V0.1 — Developed by Tao
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "toilet-reviewer.firebaseapp.com",
+            projectId: "toilet-reviewer",
+            storageBucket: "toilet-reviewer.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        getRedirectResult(auth).catch((error) => {
+            console.error("Login Redirect Error:", error);
+        });
+
+        window.handleLogin = function() {
+            signInWithRedirect(auth, provider);
+        };
+
+        window.handleLogout = function() {
+            signOut(auth);
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            const authSection = document.getElementById("auth-section");
+            if (user) {
+                authSection.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="Avatar" class="w-8 h-8 rounded-full border border-white object-cover shadow">
+                        <button onclick="handleLogout()" class="text-[10px] text-white bg-red-500 px-2 py-1 rounded-lg hover:bg-red-600">ออก</button>
+                    </div>
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <button onclick="handleLogin()" class="bg-white text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow hover:bg-teal-50 transition">
+                        เข้าสู่ระบบ
+                    </button>
+                `;
+            }
+        });
+    </script>
+
+    <script>
+        function searchLocation() {
+            const query = document.getElementById('search-box').value;
+            alert('กำลังค้นหา: ' + query);
+        }
+        function findNearestToilet() {
+            alert('🚨 กำลังเปิดระบบนำทางไปห้องน้ำที่ใกล้ที่สุด!');
+        }
+        function openReviewModal(toiletName) {
+            alert('✍️ เปิดหน้าเขียนรีวิวสำหรับ: ' + toiletName);
+        }
+        function sendFeedback() {
+            const text = document.getElementById('feedback-input').value;
+            if(!text.trim()) {
+                alert('รบกวนพิมพ์ข้อความฟีดแบ็กก่อนส่งนะครับ!');
+                return;
+            }
+            alert('ขอบคุณครับ! ส่งข้อความถึงคุณเต๋าเรียบร้อยแล้ว 🙏');
+            document.getElementById('feedback-input').value = '';
+        }
+    </script>
+</body>
+</html>
