@@ -105,7 +105,7 @@
             <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
         </div>
 
-        <!-- SOS Emergency Quick Action (คำนวณระยะทาง Haversine หาที่ใกล้ที่สุดจริง) -->
+        <!-- SOS Emergency Quick Action -->
         <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all hover:bg-red-700">
             <div class="text-center sm:text-left">
                 <h2 class="text-lg sm:text-xl font-extrabold flex items-center justify-center sm:justify-start gap-2" id="sos-title">
@@ -148,7 +148,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V1.3 — Secure & Smart
+        Take a piss 🚻 Community V0.1.1 — Secure & Smart Real-time
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -280,7 +280,7 @@
             }
         });
 
-        // 🛡️ ป้องกัน XSS โดยการ Escape อักขระพิเศษ
+        // 🛡️ ป้องกัน XSS Escape Function
         window.esc = function(s) {
             return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         };
@@ -297,7 +297,6 @@
                 return;
             }
 
-            // บังคับล็อกอินก่อนเขียนข้อมูลตามที่คุณเต๋าแนะนำ
             if (!currentUser) {
                 alert("⚠️ กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ เพื่อความปลอดภัยของข้อมูลคอมมูนิตี้ครับ!");
                 return;
@@ -331,10 +330,15 @@
                 return;
             }
 
+            if (!currentUser) {
+                alert("⚠️ กรุณากด 'เข้าสู่ระบบ' ก่อนส่งฟีดแบ็กนะครับ!");
+                return;
+            }
+
             const feedbackRef = ref(db, 'feedbacks');
             push(feedbackRef, {
                 message: text,
-                user: currentUser ? currentUser.displayName : "ผู้พิทักษ์ผู้ทดสอบ",
+                user: currentUser.displayName || "ผู้พิทักษ์",
                 timestamp: Date.now()
             }).then(() => {
                 alert("🙏 ขอบคุณมากๆ ครับผู้พิทักษ์! เราได้รับข้อมูลแจ้งบั๊ก/ฟีดแบ็กของคุณเรียบร้อยแล้ว ทีมงานจะรีบนำไปพัฒนาให้ดียิ่งขึ้นครับ!");
@@ -345,13 +349,26 @@
             });
         };
 
+        // Realtime Data Listener (ดึงข้อมูลแบบปลอดภัยและแม่นยำ)
         const toiletsRef = ref(db, 'toilets');
         onValue(toiletsRef, (snapshot) => {
             const data = snapshot.val();
             window.allToilets = [];
             if (data) {
                 Object.keys(data).forEach((key) => {
-                    window.allToilets.push({ id: key, ...data[key] });
+                    const item = data[key];
+                    if (item && item.name) {
+                        window.allToilets.push({ 
+                            id: key, 
+                            name: item.name,
+                            rating: Number(item.rating) || 5,
+                            bidet: Boolean(item.bidet),
+                            tissue: Boolean(item.tissue),
+                            detail: item.detail || "",
+                            lat: Number(item.lat) || 13.7563,
+                            lng: Number(item.lng) || 100.5018
+                        });
+                    }
                 });
                 window.allToilets.sort((a, b) => b.rating - a.rating);
             }
@@ -533,9 +550,9 @@
             );
         }
 
-        // 🧮 คำนวณระยะทางด้วยสูตร Haversine เพื่อหาห้องน้ำที่ใกล้ที่สุดจริง
+        // สูตร Haversine คำนวณหาระยะทางใกล้ที่สุดจริง
         function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-            const R = 6371; // รัศมีโลกหน่วยเป็นกิโลเมตร
+            const R = 6371;
             const dLat = deg2rad(lat2 - lat1);
             const dLon = deg2rad(lon2 - lon1);
             const a = 
@@ -543,14 +560,13 @@
                 Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
                 Math.sin(dLon/2) * Math.sin(dLon/2); 
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            return R * c; // ระยะทางหน่วย กิโลเมตร
+            return R * c;
         }
 
         function deg2rad(deg) {
             return deg * (Math.PI/180);
         }
 
-        // ปุ่ม SOS คำนวณหาห้องน้ำที่ใกล้พิกัดผู้ใช้ที่สุดจริง
         function openNearestGoogleMapsNavigation() {
             const lang = localStorage.getItem('lang') || 'th';
             
@@ -559,7 +575,6 @@
                 return;
             }
 
-            // หาห้องน้ำที่ใกล้ที่สุดจาก window.currentLat, window.currentLng
             let nearest = window.allToilets[0];
             let minDistance = Infinity;
 
