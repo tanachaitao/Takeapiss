@@ -27,7 +27,6 @@
             background: #f59e0b; color: white; border: 2px solid white; border-radius: 50%;
             text-align: center; font-size: 16px; line-height: 28px; box-shadow: 0 3px 5px rgba(0,0,0,0.3);
         }
-        /* Toast Animation */
         #toast-container { transition: all 0.3s ease; }
     </style>
     <script>
@@ -51,10 +50,10 @@
                 <span id="brand-name">Take a piss 🚻</span>
             </h1>
             <div class="flex items-center gap-2">
-                <button onclick="toggleLanguage()" class="bg-teal-700 dark:bg-teal-900 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-teal-800 transition cursor-pointer" id="lang-btn">
+                <button onclick="toggleLanguage()" class="bg-teal-700 dark:bg-teal-900 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg shadow hover:bg-teal-800 dark:hover:bg-teal-950 transition cursor-pointer" id="lang-btn" aria-label="Toggle Language">
                     EN
                 </button>
-                <button onclick="toggleDarkMode()" class="bg-teal-700 dark:bg-teal-900 text-white p-2 rounded-full shadow hover:bg-teal-800 transition cursor-pointer" title="สลับโหมดมืด/สว่าง">
+                <button onclick="toggleDarkMode()" class="bg-teal-700 dark:bg-teal-900 text-white p-2 rounded-full shadow hover:bg-teal-800 dark:hover:bg-teal-950 transition cursor-pointer" title="สลับโหมดมืด/สว่าง" aria-label="Toggle Dark Mode">
                     <span id="dark-icon">🌙</span>
                 </button>
                 <div id="auth-section">
@@ -87,7 +86,7 @@
                 <button onclick="filterToilets()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer" id="search-btn">ค้นหา</button>
             </div>
             <div class="flex gap-2">
-                <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
                     <span>📍</span> <span id="pin-btn-text">ตำแหน่งปัจจุบันของฉัน</span>
                 </button>
                 <button onclick="openAddModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
@@ -102,15 +101,16 @@
             <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
         </div>
 
-        <!-- SOS Emergency Quick Action -->
+        <!-- SOS Emergency Quick Action (แยก Element ป้องกันโดนเขียนทับ) -->
         <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all">
             <div class="text-center sm:text-left">
                 <h2 class="text-lg sm:text-xl font-extrabold flex items-center justify-center sm:justify-start gap-2" id="sos-title">
                     <span>🚨</span> ปวดฉุกเฉินด่วน!
                 </h2>
-                <p id="location-status" class="text-xs sm:text-sm text-red-100 mt-0.5">พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที</p>
+                <p id="sos-desc" class="text-xs sm:text-sm text-red-100 mt-0.5">พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที</p>
+                <p id="location-status" class="text-[11px] text-red-200 mt-0.5">📍 พิกัดหมุดปัจจุบัน: 13.7563, 100.5018</p>
             </div>
-            <button onclick="openNearestGoogleMapsNavigation()" class="w-full sm:w-auto bg-white text-red-600 font-black text-base px-6 py-3.5 rounded-xl shadow-md hover:bg-red-50 transition cursor-pointer active:scale-95" id="sos-btn">
+            <button onclick="openNearestGoogleMapsNavigation()" class="w-full sm:w-auto bg-white text-red-600 font-black text-base px-6 py-3.5 rounded-xl shadow-md hover:bg-red-50 transition cursor-pointer active:scale-95 shrink-0" id="sos-btn">
                 ⚡ นำทางไปห้องน้ำใกล้สุด!
             </button>
         </div>
@@ -121,7 +121,7 @@
                 <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5" id="ranking-title">
                     <span>🏆</span> ห้องน้ำใกล้หมุดและยอดเยี่ยมที่สุด
                 </h3>
-                <button onclick="openAddModal()" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="report-btn">
+                <button onclick="openAddModal()" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="report-btn">
                     + เพิ่มห้องน้ำ
                 </button>
             </div>
@@ -136,7 +136,7 @@
                 <h4 class="text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200" id="fb-banner-title">🛠️ เจอบั๊ก หรือมีไอเดียอยากแนะนำ?</h4>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400" id="fb-banner-desc">ช่วยกันรายงานเพื่อให้เว็บของเหล่าผู้พิทักษ์ดียิ่งขึ้น</p>
             </div>
-            <button onclick="openFeedbackModal()" class="w-full sm:w-auto bg-gray-800 dark:bg-gray-700 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0" id="fb-open-btn">
+            <button onclick="openFeedbackModal()" class="w-full sm:w-auto bg-gray-800 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0" id="fb-open-btn">
                 <span>🐞</span> <span id="fb-btn-text">แจ้งบั๊ก / ส่งฟีดแบ็ก</span>
             </button>
         </div>
@@ -144,7 +144,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V0.1.5 — Pro Refined Edition
+        Take a piss 🚻 Community V0.1.6 — Perfect Localized Edition
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -152,23 +152,23 @@
         <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-3.5">
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2.5">
                 <h3 class="font-bold text-base text-gray-800 dark:text-white flex items-center gap-1.5" id="modal-add-title"><span>🚽</span> เพิ่มพิกัดห้องน้ำใหม่</h3>
-                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer" aria-label="Close">✕</button>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer" aria-label="Close modal">✕</button>
             </div>
             
             <div class="flex flex-col gap-3 text-sm">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1" id="label-name">ชื่อสถานที่ / ห้องน้ำ *</label>
-                    <input type="text" id="new-name" maxlength="100" placeholder="เช่น ปั๊ม ปตท. พระราม 6..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                    <input type="text" id="new-name" maxlength="100" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1" id="label-rating">ให้คะแนนความสะอาด</label>
-                    <select id="new-rating" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
-                        <option value="5">⭐⭐⭐⭐⭐ (5.0 - สะอาดระดับพรีเมียม)</option>
-                        <option value="4">⭐⭐⭐⭐ (4.0 - ดีมาก เข้าได้สบาย)</option>
-                        <option value="3">⭐⭐⭐ (3.0 - พอใช้ได้ ตามมาตรฐาน)</option>
-                        <option value="2">⭐⭐ (2.0 - ควรปรับปรุง)</option>
-                        <option value="1">⭐ (1.0 - ฉุกเฉินจริงๆ)</option>
+                    <select id="new-rating" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
+                        <option value="5" id="opt-5">⭐⭐⭐⭐⭐ (5.0 - สะอาดระดับพรีเมียม)</option>
+                        <option value="4" id="opt-4">⭐⭐⭐⭐ (4.0 - ดีมาก เข้าได้สบาย)</option>
+                        <option value="3" id="opt-3">⭐⭐⭐ (3.0 - พอใช้ได้ ตามมาตรฐาน)</option>
+                        <option value="2" id="opt-2">⭐⭐ (2.0 - ควรปรับปรุง)</option>
+                        <option value="1" id="opt-1">⭐ (1.0 - ฉุกเฉินจริงๆ)</option>
                     </select>
                 </div>
 
@@ -185,7 +185,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1" id="label-detail">รีวิวเพิ่มเติม</label>
-                    <textarea id="new-detail" maxlength="300" placeholder="เช่น แอร์เย็นฉ่ำ, สะอาดมาก..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 h-20 resize-none focus:outline-none focus:border-teal-500"></textarea>
+                    <textarea id="new-detail" maxlength="300" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 h-20 resize-none focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100"></textarea>
                 </div>
 
                 <p class="text-[11px] text-teal-600 dark:text-teal-400" id="modal-coords-text">📍 พิกัด: อิงตามหมุดบนแผนที่</p>
@@ -193,7 +193,7 @@
 
             <div class="flex gap-2 mt-2">
                 <button onclick="closeAddModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-medium cursor-pointer" id="modal-cancel-btn">ยกเลิก</button>
-                <button id="save-toilet-btn" onclick="saveToiletToFirebase()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer" id="modal-save-btn">บันทึกข้อมูลขึ้นระบบ</button>
+                <button id="save-toilet-btn" onclick="saveToiletToFirebase()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer">บันทึกข้อมูลขึ้นระบบ</button>
             </div>
         </div>
     </div>
@@ -203,13 +203,13 @@
         <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-3.5">
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2.5">
                 <h3 class="font-bold text-base text-gray-800 dark:text-white flex items-center gap-1.5" id="fb-modal-title"><span>🐞</span> แจ้งบั๊ก / ส่งฟีดแบ็ก</h3>
-                <button onclick="closeFeedbackModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer" aria-label="Close">✕</button>
+                <button onclick="closeFeedbackModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer" aria-label="Close modal">✕</button>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400" id="fb-modal-desc">พบปัญหาปุ่มกดไม่ติด แผนที่ไม่ขยับ พิมพ์บอกทีมงานผู้พิทักษ์ได้เลยครับ</p>
-            <textarea id="feedback-text" maxlength="500" placeholder="พิมพ์ข้อความแจ้งบั๊ก..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm h-28 resize-none focus:outline-none focus:border-teal-500"></textarea>
+            <textarea id="feedback-text" maxlength="500" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm h-28 resize-none focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100"></textarea>
             <div class="flex gap-2">
                 <button onclick="closeFeedbackModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-medium cursor-pointer" id="fb-close-btn">ปิด</button>
-                <button id="submit-fb-btn" onclick="submitFeedbackToFirebase()" class="flex-1 bg-gray-900 dark:bg-teal-600 hover:bg-black text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer" id="fb-submit-btn">ส่งข้อมูล</button>
+                <button id="submit-fb-btn" onclick="submitFeedbackToFirebase()" class="flex-1 bg-gray-900 dark:bg-teal-600 hover:bg-black text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer">ส่งข้อมูล</button>
             </div>
         </div>
     </div>
@@ -242,7 +242,51 @@
 
         let currentUser = null;
 
-        // Toast Notification Function
+        // Internationalization Translations Dictionary for Module Script
+        const moduleTranslations = {
+            th: {
+                loginError: "ล็อกอินไม่สำเร็จ ตรวจสอบป๊อปอัปเบราว์เซอร์",
+                logoutSuccess: "ออกจากระบบเรียบร้อย",
+                noName: "กรุณาใส่ชื่อสถานที่หรือห้องน้ำก่อนครับ!",
+                needLogin: "กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ!",
+                saving: "กำลังบันทึก...",
+                saveBtn: "บันทึกข้อมูลขึ้นระบบ",
+                saveSuccess: "บันทึกข้อมูลห้องน้ำสำเร็จ!",
+                saveError: "เกิดข้อผิดพลาด: ",
+                noFeedback: "กรุณาพิมพ์ข้อความฟีดแบ็กก่อนกดส่งครับ!",
+                sending: "กำลังส่ง...",
+                sendBtn: "ส่งข้อมูล",
+                feedbackSuccess: "ขอบคุณสำหรับฟีดแบ็กครับ!",
+                feedbackError: "ส่งข้อมูลไม่สำเร็จ: ",
+                defaultDetail: "ไม่มีรายละเอียดเพิ่มเติม",
+                defaultGuardian: "ผู้พิทักษ์",
+                defaultTester: "ผู้ทดสอบระบบ"
+            },
+            en: {
+                loginError: "Login failed. Check browser popup blocker.",
+                logoutSuccess: "Logged out successfully.",
+                noName: "Please enter the restroom or location name!",
+                needLogin: "Please click 'Login' with Google before adding a restroom!",
+                saving: "Saving...",
+                saveBtn: "Save to System",
+                saveSuccess: "Restroom saved successfully!",
+                saveError: "Error: ",
+                noFeedback: "Please type your feedback before submitting!",
+                sending: "Sending...",
+                sendBtn: "Submit",
+                feedbackSuccess: "Thank you for your feedback!",
+                feedbackError: "Failed to send: ",
+                defaultDetail: "No additional details",
+                defaultGuardian: "Guardian",
+                defaultTester: "Test User"
+            }
+        };
+
+        window.t = function(key) {
+            const lang = localStorage.getItem('lang') || 'th';
+            return moduleTranslations[lang][key] || key;
+        };
+
         window.showToast = function(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -251,10 +295,7 @@
             toast.innerHTML = `<span>${type === 'error' ? '❌' : '🎉'}</span> <span>${esc(message)}</span>`;
             container.appendChild(toast);
             
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
@@ -264,12 +305,12 @@
         window.handleLogin = function() {
             signInWithPopup(auth, provider).catch((error) => {
                 console.error("Login Error:", error);
-                showToast("ล็อกอินไม่สำเร็จ ตรวจสอบป๊อปอัปเบราว์เซอร์", "error");
+                showToast(window.t('loginError'), "error");
             });
         };
 
         window.handleLogout = function() {
-            signOut(auth).then(() => showToast("ออกจากระบบเรียบร้อย"));
+            signOut(auth).then(() => showToast(window.t('logoutSuccess')));
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -295,7 +336,6 @@
             return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         };
 
-        // Anti-spam & Validation Save
         window.saveToiletToFirebase = function() {
             const nameInput = document.getElementById('new-name');
             const name = nameInput.value.trim();
@@ -306,17 +346,17 @@
             const saveBtn = document.getElementById('save-toilet-btn');
 
             if (!name) {
-                showToast("กรุณาใส่ชื่อสถานที่หรือห้องน้ำก่อนครับ!", "error");
+                showToast(window.t('noName'), "error");
                 return;
             }
 
             if (!currentUser) {
-                showToast("กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ!", "error");
+                showToast(window.t('needLogin'), "error");
                 return;
             }
 
             saveBtn.disabled = true;
-            saveBtn.innerText = "กำลังบันทึก...";
+            saveBtn.innerText = window.t('saving');
 
             const toiletsRef = ref(db, 'toilets');
             push(toiletsRef, {
@@ -324,21 +364,21 @@
                 rating: rating,
                 bidet: bidet,
                 tissue: tissue,
-                detail: detail || "ไม่มีรายละเอียดเพิ่มเติม",
+                detail: detail || window.t('defaultDetail'),
                 lat: Number(window.currentLat),
                 lng: Number(window.currentLng),
-                addedBy: currentUser.displayName || "ผู้พิทักษ์",
+                addedBy: currentUser.displayName || window.t('defaultGuardian'),
                 timestamp: Date.now()
             }).then(() => {
-                showToast("บันทึกข้อมูลห้องน้ำสำเร็จ!");
+                showToast(window.t('saveSuccess'));
                 nameInput.value = '';
                 document.getElementById('new-detail').value = '';
                 window.closeAddModal();
             }).catch((error) => {
-                showToast("เกิดข้อผิดพลาด: " + error.message, "error");
+                showToast(window.t('saveError') + error.message, "error");
             }).finally(() => {
                 saveBtn.disabled = false;
-                saveBtn.innerText = "บันทึกข้อมูลขึ้นระบบ";
+                saveBtn.innerText = window.t('saveBtn');
             });
         };
 
@@ -348,27 +388,27 @@
             const submitBtn = document.getElementById('submit-fb-btn');
 
             if (!text) {
-                showToast("กรุณาพิมพ์ข้อความฟีดแบ็กก่อนกดส่งครับ!", "error");
+                showToast(window.t('noFeedback'), "error");
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "กำลังส่ง...";
+            submitBtn.innerText = window.t('sending');
 
             const feedbackRef = ref(db, 'feedbacks');
             push(feedbackRef, {
                 message: text,
-                user: currentUser ? currentUser.displayName : "ผู้ทดสอบระบบ",
+                user: currentUser ? currentUser.displayName : window.t('defaultTester'),
                 timestamp: Date.now()
             }).then(() => {
-                showToast("ขอบคุณสำหรับฟีดแบ็กครับ!");
+                showToast(window.t('feedbackSuccess'));
                 textInput.value = '';
                 window.closeFeedbackModal();
             }).catch((error) => {
-                showToast("ส่งข้อมูลไม่สำเร็จ: " + error.message, "error");
+                showToast(window.t('feedbackError') + error.message, "error");
             }).finally(() => {
                 submitBtn.disabled = false;
-                submitBtn.innerText = "ส่งข้อมูล";
+                submitBtn.innerText = window.t('sendBtn');
             });
         };
 
@@ -571,20 +611,18 @@
             const statusText = document.getElementById('location-status');
             const lang = localStorage.getItem('lang') || 'th';
             statusText.innerText = lang === 'th' 
-                ? `✅ พิกัดหมุดปัจจุบัน: ${lat.toFixed(4)}, ${lng.toFixed(4)}` 
-                : `✅ Current Pin: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-            filterToilets(); // คงผลการเสิร์ชเดิมไว้ตอนย้ายหมุด
+                ? `📍 พิกัดหมุดปัจจุบัน: ${lat.toFixed(4)}, ${lng.toFixed(4)}` 
+                : `📍 Current Pin: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            filterToilets();
         }
 
         function getCurrentLocation() {
-            const statusText = document.getElementById('location-status');
             const lang = localStorage.getItem('lang') || 'th';
-            
             if (!navigator.geolocation) {
                 showToast(lang === 'th' ? 'เบราว์เซอร์ไม่รองรับ GPS' : 'Geolocation not supported', 'error');
                 return;
             }
-            statusText.innerText = lang === 'th' ? '🔄 กำลังดึงพิกัด GPS...' : '🔄 Locating GPS...';
+            showToast(lang === 'th' ? '🔄 กำลังดึงพิกัด GPS...' : '🔄 Locating GPS...');
             
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -592,7 +630,6 @@
                     updateLocationStatus(position.coords.latitude, position.coords.longitude);
                 },
                 () => {
-                    statusText.innerText = lang === 'th' ? '❌ ไม่สามารถดึงตำแหน่งได้' : '❌ Unable to get location';
                     showToast(lang === 'th' ? 'ไม่สามารถดึงตำแหน่ง GPS ได้' : 'Location error', 'error');
                 },
                 { enableHighAccuracy: true, timeout: 10000 }
@@ -615,7 +652,9 @@
         }
 
         window.openAddModal = function() {
-            document.getElementById('modal-coords-text').innerText = `📍 พิกัด: ${window.currentLat.toFixed(5)}, ${window.currentLng.toFixed(5)}`;
+            const lang = localStorage.getItem('lang') || 'th';
+            const prefix = lang === 'th' ? '📍 พิกัด: ' : '📍 Pin: ';
+            document.getElementById('modal-coords-text').innerText = prefix + `${window.currentLat.toFixed(5)}, ${window.currentLng.toFixed(5)}`;
             const m = document.getElementById('add-modal');
             m.classList.remove('hidden');
             m.classList.add('flex');
@@ -677,14 +716,22 @@
                 mapHint: "💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที",
                 modalAddTitle: "เพิ่มพิกัดห้องน้ำใหม่",
                 labelName: "ชื่อสถานที่ / ห้องน้ำ *",
+                namePlaceholder: "เช่น ปั๊ม ปตท. พระราม 6...",
                 labelRating: "ให้คะแนนความสะอาด",
+                opt5: "⭐⭐⭐⭐⭐ (5.0 - สะอาดระดับพรีเมียม)",
+                opt4: "⭐⭐⭐⭐ (4.0 - ดีมาก เข้าได้สบาย)",
+                opt3: "⭐⭐⭐ (3.0 - พอใช้ได้ ตามมาตรฐาน)",
+                opt2: "⭐⭐ (2.0 - ควรปรับปรุง)",
+                opt1: "⭐ (1.0 - ฉุกเฉินจริงๆ)",
                 labelBidet: "💧 มีสายฉีดชำระ",
                 labelTissue: "🧻 มีทิชชู่",
                 labelDetail: "รีวิวเพิ่มเติม",
+                detailPlaceholder: "เช่น แอร์เย็นฉ่ำ, สะอาดมาก...",
                 modalCancel: "ยกเลิก",
                 modalSave: "บันทึกข้อมูลขึ้นระบบ",
                 fbModalTitle: "แจ้งบั๊ก / ส่งฟีดแบ็ก",
                 fbModalDesc: "พบปัญหาปุ่มกดไม่ติด แผนที่ไม่ขยับ พิมพ์บอกทีมงานผู้พิทักษ์ได้เลยครับ",
+                fbPlaceholder: "พิมพ์ข้อความแจ้งบั๊ก...",
                 fbClose: "ปิด",
                 fbSubmit: "ส่งข้อมูล",
                 loading: "🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล..."
@@ -708,14 +755,22 @@
                 mapHint: "💡 Tip: Tap or click anywhere on the map to move the 🚽 pin instantly.",
                 modalAddTitle: "Add New Restroom Pin",
                 labelName: "Restroom / Location Name *",
+                namePlaceholder: "e.g., PTT Station Rama 6...",
                 labelRating: "Cleanliness Rating",
+                opt5: "⭐⭐⭐⭐⭐ (5.0 - Premium Clean)",
+                opt4: "⭐⭐⭐⭐ (4.0 - Very Good)",
+                opt3: "⭐⭐⭐ (3.0 - Standard)",
+                opt2: "⭐⭐ (2.0 - Needs Improvement)",
+                opt1: "⭐ (1.0 - Emergency Only)",
                 labelBidet: "💧 Bidet available",
                 labelTissue: "🧻 Tissue available",
                 labelDetail: "Additional Review",
+                detailPlaceholder: "e.g., AC is cool, very clean...",
                 modalCancel: "Cancel",
                 modalSave: "Save to System",
                 fbModalTitle: "Report Bug / Feedback",
                 fbModalDesc: "Found a bug or have suggestions? Let our team know.",
+                fbPlaceholder: "Type bug message...",
                 fbClose: "Close",
                 fbSubmit: "Submit",
                 loading: "🔄 Loading restrooms from database..."
@@ -736,7 +791,7 @@
         function loadLanguage() {
             let lang = localStorage.getItem('lang') || 'th';
             document.getElementById('lang-btn').innerText = lang === 'th' ? 'EN' : 'TH';
-            document.getElementById('page-title').innerText = lang === 'th' ? 'Take a piss 🚻 - ค้นหาและรีวิวห้องน้ำ' : 'Take a piss 🚻 - Restroom Finder';
+            document.getElementById('page-title').innerText = lang === 'th' ? 'Take a piss 🚻 - ค้นหาและรีวิวห้องน้ำสาธารณะ' : 'Take a piss 🚻 - Restroom Finder';
             
             const t = translations[lang];
             document.getElementById('brand-name').innerText = t.brand;
@@ -745,7 +800,7 @@
             document.getElementById('pin-btn-text').innerText = t.pinBtn;
             document.getElementById('add-btn-text').innerText = t.addBtn;
             document.getElementById('sos-title').innerHTML = `<span>🚨</span> ${t.sosTitle.replace('🚨 ', '')}`;
-            document.getElementById('location-status').innerText = t.sosDesc;
+            document.getElementById('sos-desc').innerText = t.sosDesc;
             document.getElementById('sos-btn').innerText = t.sosBtn;
             document.getElementById('ranking-title').innerHTML = `<span>🏆</span> ${t.rankingTitle.replace('🏆 ', '')}`;
             document.getElementById('report-btn').innerText = t.reportBtn;
@@ -757,20 +812,35 @@
             document.getElementById('map-hint').innerText = t.mapHint;
             document.getElementById('loading-text').innerText = t.loading;
 
-            // Modal texts
+            // Modal texts & placeholders
             document.getElementById('modal-add-title').innerHTML = `<span>🚽</span> ${t.modalAddTitle}`;
             document.getElementById('label-name').innerText = t.labelName;
+            document.getElementById('new-name').placeholder = t.namePlaceholder;
             document.getElementById('label-rating').innerText = t.labelRating;
+            document.getElementById('opt-5').innerText = t.opt5;
+            document.getElementById('opt-4').innerText = t.opt4;
+            document.getElementById('opt-3').innerText = t.opt3;
+            document.getElementById('opt-2').innerText = t.opt2;
+            document.getElementById('opt-1').innerText = t.opt1;
             document.getElementById('label-bidet').innerText = t.labelBidet;
             document.getElementById('label-tissue').innerText = t.labelTissue;
             document.getElementById('label-detail').innerText = t.labelDetail;
+            document.getElementById('new-detail').placeholder = t.detailPlaceholder;
             document.getElementById('modal-cancel-btn').innerText = t.modalCancel;
             document.getElementById('save-toilet-btn').innerText = t.modalSave;
 
             document.getElementById('fb-modal-title').innerHTML = `<span>🐞</span> ${t.fbModalTitle}`;
             document.getElementById('fb-modal-desc').innerText = t.fbModalDesc;
+            document.getElementById('feedback-text').placeholder = t.fbPlaceholder;
             document.getElementById('fb-close-btn').innerText = t.fbClose;
             document.getElementById('submit-fb-btn').innerText = t.fbSubmit;
+
+            // Update modal coordinates text prefix if modal is open
+            const coordsText = document.getElementById('modal-coords-text');
+            if (coordsText && !document.getElementById('add-modal').classList.contains('hidden')) {
+                const prefix = lang === 'th' ? '📍 พิกัด: ' : '📍 Pin: ';
+                coordsText.innerText = prefix + `${window.currentLat.toFixed(5)}, ${window.currentLng.toFixed(5)}`;
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
