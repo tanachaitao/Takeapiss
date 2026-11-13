@@ -39,7 +39,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200" onkeydown="handleGlobalKeydown(event)">
 
-    <!-- Toast Notification Container (Fixed for mobile overflow) -->
+    <!-- Toast Notification Container (Centered for Mobile & Desktop) -->
     <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Header / Navbar -->
@@ -163,7 +163,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V0.1.8 — Leaderboard Edition
+        Take a piss 🚻 Community V0.1.9 — Hybrid Auth & Leaderboard Edition
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -239,7 +239,7 @@
     <!-- Firebase SDKs & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -260,10 +260,11 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         let currentUser = null;
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         const moduleTranslations = {
             th: {
-                loginError: "ล็อกอินไม่สำเร็จ ตรวจสอบป๊อปอัปเบราว์เซอร์",
+                loginError: "ล็อกอินไม่สำเร็จ กรุณาลองเปิดผ่านเบราว์เซอร์หลัก (Chrome/Safari)",
                 logoutSuccess: "ออกจากระบบเรียบร้อย",
                 noName: "กรุณาใส่ชื่อสถานที่หรือห้องน้ำก่อนครับ!",
                 needLogin: "กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ!",
@@ -282,7 +283,7 @@
                 logoutBtn: "ออก"
             },
             en: {
-                loginError: "Login failed. Check browser popup.",
+                loginError: "Login failed. Please open in Chrome or Safari.",
                 logoutSuccess: "Logged out successfully.",
                 noName: "Please enter the location name!",
                 needLogin: "Please login with Google before adding a restroom!",
@@ -341,12 +342,30 @@
             }, 3000);
         };
 
+        // Hybrid Login: Redirect บนมือถือ, Popup บนคอมพิวเตอร์
         window.handleLogin = function() {
-            signInWithPopup(auth, provider).catch((error) => {
-                console.error("Login Error:", error);
-                showToast(window.t('loginError'), "error");
-            });
+            if (isMobile) {
+                signInWithRedirect(auth, provider).catch((error) => {
+                    console.error("Redirect Login Error:", error);
+                    showToast(window.t('loginError'), "error");
+                });
+            } else {
+                signInWithPopup(auth, provider).catch((error) => {
+                    console.error("Popup Login Error:", error);
+                    showToast(window.t('loginError'), "error");
+                });
+            }
         };
+
+        // ตรวจสอบผลลัพธ์หลังจาก Redirect กลับมาบนมือถือ
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                currentUser = result.user;
+                window.renderAuth();
+            }
+        }).catch((error) => {
+            console.error("Redirect Result Error:", error);
+        });
 
         window.handleLogout = function() {
             signOut(auth).then(() => showToast(window.t('logoutSuccess')));
@@ -585,7 +604,7 @@
 
         function deg2rad(deg) { return deg * (Math.PI/180); }
 
-        // แสดงผลหน้าแรก: เอาเฉพาะ 5 อันดับแรกที่ใกล้ที่สุด
+        // Top 5 Nearest Restrooms
         window.renderToiletList = function(toilets) {
             const listEl = document.getElementById('toilet-list');
             let lang = localStorage.getItem('lang') || 'th';
@@ -605,7 +624,7 @@
             });
 
             toiletsWithDist.sort((a, b) => a.distance - b.distance);
-            const top5Toilets = toiletsWithDist.slice(0, 5); // เอาแค่ 1-5 อันดับแรก
+            const top5Toilets = toiletsWithDist.slice(0, 5);
 
             listEl.innerHTML = top5Toilets.map((t, index) => {
                 const distText = t.distance < 1 ? `${(t.distance * 1000).toFixed(0)} ${lang === 'th' ? 'เมตร' : 'm'}` : `${t.distance.toFixed(1)} ${lang === 'th' ? 'กม.' : 'km.'}`;
@@ -650,7 +669,7 @@
             }).join('');
         };
 
-        // แสดงผลหน้า Leaderboard แบบเต็มหน้าเพจ (จัดอันดับตามเรตติ้งสูงสุด)
+        // Full Leaderboard Page
         window.renderLeaderboardPage = function(toilets) {
             const lbListEl = document.getElementById('leaderboard-full-list');
             let lang = localStorage.getItem('lang') || 'th';
@@ -660,7 +679,6 @@
                 return;
             }
 
-            // เรียงตามดาวสูงสุด (Rating)
             const sortedByRating = [...toilets].sort((a, b) => b.rating - a.rating);
 
             lbListEl.innerHTML = sortedByRating.map((t, index) => {
