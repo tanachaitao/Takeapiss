@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">Take a piss 🚻 - ค้นหาและรีวิวห้องน้ำสาธารณะ</title>
-    <!-- Tailwind CSS v4 CDN + Dark Mode Config -->
+    <!-- Tailwind CSS v4 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
         @custom-variant dark (&:where(.dark, .dark *));
@@ -122,7 +122,7 @@
         <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-3 transition-colors duration-200">
             <div class="flex justify-between items-center">
                 <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5" id="ranking-title">
-                    <span>🏆</span> จัดอันดับห้องน้ำยอดเยี่ยม (ข้อมูลจริง)
+                    <span>🏆</span> ห้องน้ำใกล้คุณและยอดเยี่ยมที่สุด
                 </h3>
                 <button onclick="openAddModal()" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="report-btn">
                     + เพิ่มห้องน้ำ
@@ -148,7 +148,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V0.1.1 — Secure & Smart Real-time
+        Take a piss 🚻 Community V0.1.3 — Distance & Smart Nearby
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -267,7 +267,7 @@
             if (user) {
                 authSection.innerHTML = `
                     <div class="flex items-center gap-2">
-                        <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="Avatar" class="w-8 h-8 rounded-full border border-white object-cover shadow">
+                        <img src="${user.photoURL || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230d9488\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'></path><circle cx=\'12\' cy=\'7\' r=\'4\'></circle></svg>'}" alt="Avatar" class="w-8 h-8 rounded-full border border-white object-cover shadow">
                         <button onclick="handleLogout()" class="text-[10px] text-white bg-red-500 px-2 py-1 rounded-lg hover:bg-red-600 cursor-pointer">ออก</button>
                     </div>
                 `;
@@ -280,11 +280,11 @@
             }
         });
 
-        // 🛡️ ป้องกัน XSS Escape Function
         window.esc = function(s) {
             return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         };
 
+        // 🛡️ แก้ไขให้บันทึกข้อมูลได้ราบรื่น 100%
         window.saveToiletToFirebase = function() {
             const name = document.getElementById('new-name').value.trim();
             const rating = parseFloat(document.getElementById('new-rating').value);
@@ -309,8 +309,8 @@
                 bidet: bidet,
                 tissue: tissue,
                 detail: detail || "ไม่มีรายละเอียดเพิ่มเติม",
-                lat: window.currentLat,
-                lng: window.currentLng,
+                lat: Number(window.currentLat),
+                lng: Number(window.currentLng),
                 addedBy: currentUser.displayName || "ผู้พิทักษ์",
                 timestamp: Date.now()
             }).then(() => {
@@ -330,15 +330,10 @@
                 return;
             }
 
-            if (!currentUser) {
-                alert("⚠️ กรุณากด 'เข้าสู่ระบบ' ก่อนส่งฟีดแบ็กนะครับ!");
-                return;
-            }
-
             const feedbackRef = ref(db, 'feedbacks');
             push(feedbackRef, {
                 message: text,
-                user: currentUser.displayName || "ผู้พิทักษ์",
+                user: currentUser ? currentUser.displayName : "ผู้พิทักษ์ผู้ทดสอบ",
                 timestamp: Date.now()
             }).then(() => {
                 alert("🙏 ขอบคุณมากๆ ครับผู้พิทักษ์! เราได้รับข้อมูลแจ้งบั๊ก/ฟีดแบ็กของคุณเรียบร้อยแล้ว ทีมงานจะรีบนำไปพัฒนาให้ดียิ่งขึ้นครับ!");
@@ -349,7 +344,6 @@
             });
         };
 
-        // Realtime Data Listener (ดึงข้อมูลแบบปลอดภัยและแม่นยำ)
         const toiletsRef = ref(db, 'toilets');
         onValue(toiletsRef, (snapshot) => {
             const data = snapshot.val();
@@ -357,7 +351,8 @@
             if (data) {
                 Object.keys(data).forEach((key) => {
                     const item = data[key];
-                    if (item && item.name) {
+                    const lat = Number(item.lat), lng = Number(item.lng);
+                    if (item && item.name && isFinite(lat) && isFinite(lng)) {
                         window.allToilets.push({ 
                             id: key, 
                             name: item.name,
@@ -365,8 +360,8 @@
                             bidet: Boolean(item.bidet),
                             tissue: Boolean(item.tissue),
                             detail: item.detail || "",
-                            lat: Number(item.lat) || 13.7563,
-                            lng: Number(item.lng) || 100.5018
+                            lat: lat,
+                            lng: lng
                         });
                     }
                 });
@@ -427,7 +422,6 @@
             }
         }
 
-        // วาดหมุด พร้อมป้องกัน XSS ใน Popup
         window.renderSavedMarkers = function(toilets) {
             if (!savedMarkersLayer) return;
             savedMarkersLayer.clearLayers();
@@ -461,6 +455,24 @@
             });
         };
 
+        // สูตรคำนวณระยะทาง Haversine
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI/180);
+        }
+
+        // 🌟 แสดงผลรายชื่อพร้อมคำนวณระยะทางจากผู้ใช้จริง และไฮไลต์ห้องน้ำใกล้ที่สุด
         window.renderToiletList = function(toilets) {
             const listEl = document.getElementById('toilet-list');
             if (!toilets || toilets.length === 0) {
@@ -472,38 +484,55 @@
                 return;
             }
 
-            listEl.innerHTML = toilets.map((t, index) => `
-                <div class="bg-gray-50 dark:bg-gray-900 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 flex flex-col gap-2 transition-colors">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="flex items-start gap-2.5">
-                            <span class="text-sm font-bold ${index === 0 ? 'text-amber-500' : 'text-gray-400'} mt-0.5">#${index + 1} 🚽</span>
-                            <div>
-                                <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">${esc(t.name)}</h4>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">${esc(t.detail)}</p>
+            // คำนวณระยะทางเทียบกับพิกัดปัจจุบัน (window.currentLat, window.currentLng)
+            const toiletsWithDist = toilets.map(t => {
+                const dist = getDistanceFromLatLonInKm(window.currentLat, window.currentLng, t.lat, t.lng);
+                return { ...t, distance: dist };
+            });
+
+            // เรียงลำดับตามระยะทางที่ใกล้ที่สุด (หรือจะใช้คะแนนผสมได้)
+            toiletsWithDist.sort((a, b) => a.distance - b.distance);
+
+            listEl.innerHTML = toiletsWithDist.map((t, index) => {
+                const distText = t.distance < 1 ? `${(t.distance * 1000).toFixed(0)} เมตร` : `${t.distance.toFixed(1)} กม.`;
+                const isNearest = index === 0;
+
+                return `
+                    <div class="bg-gray-50 dark:bg-gray-900 p-3.5 rounded-xl border ${isNearest ? 'border-teal-500 ring-1 ring-teal-500/50' : 'border-gray-100 dark:border-gray-800'} flex flex-col gap-2 transition-colors">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex items-start gap-2.5">
+                                <span class="text-sm font-bold ${isNearest ? 'text-teal-600 dark:text-teal-400' : 'text-gray-400'} mt-0.5">
+                                    ${isNearest ? '📍 ใกล้คุณสุด' : `#${index + 1}`}
+                                </span>
+                                <div>
+                                    <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">${esc(t.name)}</h4>
+                                    <p class="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-0.5">📍 ห่างจากคุณประมาณ ${distText}</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">💬 ${esc(t.detail)}</p>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs font-bold px-2.5 py-1 rounded-lg shrink-0">⭐ ${Number(t.rating).toFixed(1)}</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/60 dark:border-gray-800">
+                            <div class="flex gap-1.5 text-[11px]">
+                                <span class="${t.bidet ? 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
+                                    ${t.bidet ? '💧 มีสายฉีด' : '❌ ไม่มีสายฉีด'}
+                                </span>
+                                <span class="${t.tissue ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
+                                    ${t.tissue ? '🧻 มีทิชชู่' : '❌ ไม่มีทิชชู่'}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="map.setView([${t.lat}, ${t.lng}], 17); document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                                    📍 ดูหมุด
+                                </button>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
+                                    🧭 นำทาง
+                                </a>
                             </div>
                         </div>
-                        <span class="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs font-bold px-2.5 py-1 rounded-lg shrink-0">⭐ ${Number(t.rating).toFixed(1)}</span>
                     </div>
-                    <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/60 dark:border-gray-800">
-                        <div class="flex gap-1.5 text-[11px]">
-                            <span class="${t.bidet ? 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
-                                ${t.bidet ? '💧 มีสายฉีดชำระ' : '❌ ไม่มีสายฉีด'}
-                            </span>
-                            <span class="${t.tissue ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
-                                ${t.tissue ? '🧻 มีทิชชู่' : '❌ ไม่มีทิชชู่'}
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="map.setView([${t.lat}, ${t.lng}], 17);" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
-                                📍 ดูหมุด
-                            </button>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
-                                🧭 นำทาง
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         };
 
         function filterToilets() {
@@ -524,6 +553,8 @@
             statusText.innerText = lang === 'th' 
                 ? `✅ พิกัดหมุดปัจจุบัน: ${lat.toFixed(4)}, ${lng.toFixed(4)}` 
                 : `✅ Current Pin: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            // คำนวณระยะทางใหม่เมื่อพิกัดเปลี่ยน
+            renderToiletList(window.allToilets);
         }
 
         function getCurrentLocation() {
@@ -550,23 +581,7 @@
             );
         }
 
-        // สูตร Haversine คำนวณหาระยะทางใกล้ที่สุดจริง
-        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            return R * c;
-        }
-
-        function deg2rad(deg) {
-            return deg * (Math.PI/180);
-        }
-
+        // ปุ่ม SOS นำทางไปห้องน้ำใกล้ที่สุดอัตโนมัติ
         function openNearestGoogleMapsNavigation() {
             const lang = localStorage.getItem('lang') || 'th';
             
@@ -579,35 +594,15 @@
             let minDistance = Infinity;
 
             window.allToilets.forEach(t => {
-                if (t.lat && t.lng) {
-                    const dist = getDistanceFromLatLonInKm(window.currentLat, window.currentLng, t.lat, t.lng);
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        nearest = t;
-                    }
+                const dist = getDistanceFromLatLonInKm(window.currentLat, window.currentLng, t.lat, t.lng);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearest = t;
                 }
             });
 
             const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`;
             window.open(gmapsUrl, '_blank', 'noopener,noreferrer');
-
-            setTimeout(() => {
-                const ok = confirm(lang === 'th' 
-                    ? `🎉 พุ่งตัวไปที่ "${nearest.name}" สำเร็จ!\nคุณสบายตัวแล้วใช่ไหม? กด OK เพื่อแชร์เว็บให้เพื่อนต่อ!` 
-                    : `🎉 Reached destination! Share app with friends?`);
-                if (ok) {
-                    if (navigator.share) {
-                        navigator.share({
-                            title: 'Take a piss 🚻',
-                            text: 'รวมพิกัดห้องน้ำสะอาด มีสายฉีดชำระ สำหรับสายฉุกเฉิน!',
-                            url: window.location.href
-                        }).catch(() => {});
-                    } else {
-                        navigator.clipboard.writeText(window.location.href);
-                        alert(lang === 'th' ? '📋 คัดลอกลิงก์สำเร็จแล้ว!' : '📋 Link copied!');
-                    }
-                }
-            }, 2500);
         }
 
         window.openAddModal = function() {
@@ -657,7 +652,7 @@
                 addBtn: "เพิ่มห้องน้ำที่หมุดนี้",
                 sosTitle: "🚨 ปวดฉุกเฉินด่วน!",
                 sosBtn: "⚡ นำทางไปห้องน้ำใกล้สุด!",
-                rankingTitle: "🏆 จัดอันดับห้องน้ำยอดเยี่ยม (ข้อมูลจริง)",
+                rankingTitle: "🏆 ห้องน้ำใกล้คุณและยอดเยี่ยมที่สุด",
                 reportBtn: "+ เพิ่มห้องน้ำ"
             },
             en: {
@@ -670,7 +665,7 @@
                 addBtn: "Add at This Pin",
                 sosTitle: "🚨 Emergency SOS!",
                 sosBtn: "⚡ Navigate to Nearest!",
-                rankingTitle: "🏆 Top Rated Restrooms (Live Data)",
+                rankingTitle: "🏆 Nearby & Top Rated Restrooms",
                 reportBtn: "+ Add Restroom"
             }
         };
@@ -704,6 +699,10 @@
             initMap();
             loadLanguage();
             document.getElementById('dark-icon').innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+            if (window.allToilets) {
+                window.renderSavedMarkers(window.allToilets);
+                window.renderToiletList(window.allToilets);
+            }
         });
     </script>
 </body>
