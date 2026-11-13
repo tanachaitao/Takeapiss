@@ -9,40 +9,26 @@
     <style type="text/tailwindcss">
         @custom-variant dark (&:where(.dark, .dark *));
     </style>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet CSS with SRI -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <!-- Google Fonts: Fredoka + Mali -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Fredoka', 'Mali', sans-serif; 
-        }
-        h1, h2, h3, button {
-            letter-spacing: 0.01em;
-        }
+        body { font-family: 'Fredoka', 'Mali', sans-serif; }
+        h1, h2, h3, button { letter-spacing: 0.01em; }
         #map { height: 260px; width: 100%; border-radius: 1rem; z-index: 10; cursor: pointer; }
         .toilet-marker-icon {
-            background: #0d9488;
-            color: white;
-            border: 2px solid white;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 18px;
-            line-height: 32px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            background: #0d9488; color: white; border: 2px solid white; border-radius: 50%;
+            text-align: center; font-size: 18px; line-height: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .saved-toilet-icon {
-            background: #f59e0b;
-            color: white;
-            border: 2px solid white;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 16px;
-            line-height: 28px;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+            background: #f59e0b; color: white; border: 2px solid white; border-radius: 50%;
+            text-align: center; font-size: 16px; line-height: 28px; box-shadow: 0 3px 5px rgba(0,0,0,0.3);
         }
+        /* Toast Animation */
+        #toast-container { transition: all 0.3s ease; }
     </style>
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -52,10 +38,13 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200" onkeydown="handleGlobalKeydown(event)">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Header / Navbar -->
-    <header class="bg-teal-600 dark:bg-teal-800 text-white shadow-md sticky top-0 z-50 transition-colors duration-200">
+    <header class="bg-teal-600 dark:bg-teal-800 text-white shadow-md sticky top-0 z-40 transition-colors duration-200">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-base sm:text-lg font-bold flex items-center gap-2">
                 <span class="text-xl">🚽</span>
@@ -91,14 +80,14 @@
             </div>
         </div>
 
-        <!-- Search, GPS Pinpoint & Add Toilet Section -->
+        <!-- Search & Actions -->
         <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-2.5 transition-colors duration-200">
             <div class="flex gap-2">
                 <input type="text" id="search-box" onkeyup="filterToilets()" placeholder="ค้นหาชื่อห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
                 <button onclick="filterToilets()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer" id="search-btn">ค้นหา</button>
             </div>
             <div class="flex gap-2">
-                <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
                     <span>📍</span> <span id="pin-btn-text">ตำแหน่งปัจจุบันของฉัน</span>
                 </button>
                 <button onclick="openAddModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
@@ -107,14 +96,14 @@
             </div>
         </div>
 
-        <!-- Interactive Map Section -->
+        <!-- Interactive Map -->
         <div class="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
             <div id="map"></div>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
         </div>
 
         <!-- SOS Emergency Quick Action -->
-        <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all hover:bg-red-700">
+        <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all">
             <div class="text-center sm:text-left">
                 <h2 class="text-lg sm:text-xl font-extrabold flex items-center justify-center sm:justify-start gap-2" id="sos-title">
                     <span>🚨</span> ปวดฉุกเฉินด่วน!
@@ -126,108 +115,107 @@
             </button>
         </div>
 
-        <!-- Real-time Leaderboard / Best Toilets Nearby -->
+        <!-- Leaderboard -->
         <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-3 transition-colors duration-200">
             <div class="flex justify-between items-center">
                 <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5" id="ranking-title">
-                    <span>🏆</span> ห้องน้ำใกล้คุณและยอดเยี่ยมที่สุด
+                    <span>🏆</span> ห้องน้ำใกล้หมุดและยอดเยี่ยมที่สุด
                 </h3>
                 <button onclick="openAddModal()" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="report-btn">
                     + เพิ่มห้องน้ำ
                 </button>
             </div>
-            
             <div id="toilet-list" class="flex flex-col gap-2.5">
-                <div class="text-center py-6 text-xs text-gray-400">🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล...</div>
+                <div class="text-center py-6 text-xs text-gray-400" id="loading-text">🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล...</div>
             </div>
         </div>
 
-        <!-- ปุ่มแจ้งบั๊ก / ส่งฟีดแบ็ก -->
+        <!-- Feedback Banner -->
         <div class="bg-gray-100 dark:bg-gray-800/80 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="text-center sm:text-left">
                 <h4 class="text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200" id="fb-banner-title">🛠️ เจอบั๊ก หรือมีไอเดียอยากแนะนำ?</h4>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400" id="fb-banner-desc">ช่วยกันรายงานเพื่อให้เว็บของเหล่าผู้พิทักษ์ดียิ่งขึ้น</p>
             </div>
-            <button onclick="openFeedbackModal()" class="w-full sm:w-auto bg-gray-800 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0" id="fb-open-btn">
-                <span>🐞</span> <span>แจ้งบั๊ก / ส่งฟีดแบ็ก</span>
+            <button onclick="openFeedbackModal()" class="w-full sm:w-auto bg-gray-800 dark:bg-gray-700 hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0" id="fb-open-btn">
+                <span>🐞</span> <span id="fb-btn-text">แจ้งบั๊ก / ส่งฟีดแบ็ก</span>
             </button>
         </div>
     </main>
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V0.1.4 — Mali Cute Edition
+        Take a piss 🚻 Community V0.1.5 — Pro Refined Edition
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
-    <div id="add-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 backdrop-blur-xs">
+    <div id="add-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 backdrop-blur-xs" onclick="if(event.target === this) closeAddModal()">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-3.5">
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2.5">
-                <h3 class="font-bold text-base text-gray-800 dark:text-white flex items-center gap-1.5"><span>🚽</span> เพิ่มพิกัดห้องน้ำใหม่</h3>
-                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer">✕</button>
+                <h3 class="font-bold text-base text-gray-800 dark:text-white flex items-center gap-1.5" id="modal-add-title"><span>🚽</span> เพิ่มพิกัดห้องน้ำใหม่</h3>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer" aria-label="Close">✕</button>
             </div>
             
             <div class="flex flex-col gap-3 text-sm">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">ชื่อสถานที่ / ห้องน้ำ *</label>
-                    <input type="text" id="new-name" placeholder="เช่น ปั๊ม ปตท. พระราม 6, ชั้น 2 เซ็นทรัล..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1" id="label-name">ชื่อสถานที่ / ห้องน้ำ *</label>
+                    <input type="text" id="new-name" maxlength="100" placeholder="เช่น ปั๊ม ปตท. พระราม 6..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">ให้คะแนนความสะอาด/ความประทับใจ</label>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1" id="label-rating">ให้คะแนนความสะอาด</label>
                     <select id="new-rating" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 focus:outline-none focus:border-teal-500">
                         <option value="5">⭐⭐⭐⭐⭐ (5.0 - สะอาดระดับพรีเมียม)</option>
                         <option value="4">⭐⭐⭐⭐ (4.0 - ดีมาก เข้าได้สบาย)</option>
                         <option value="3">⭐⭐⭐ (3.0 - พอใช้ได้ ตามมาตรฐาน)</option>
                         <option value="2">⭐⭐ (2.0 - ควรปรับปรุง)</option>
-                        <option value="1">⭐ (1.0 - ฉุกเฉินจริงๆ ค่อยเข้า)</option>
+                        <option value="1">⭐ (1.0 - ฉุกเฉินจริงๆ)</option>
                     </select>
                 </div>
 
                 <div class="flex gap-4 py-1">
                     <label class="flex items-center gap-2 cursor-pointer text-xs sm:text-sm font-medium">
                         <input type="checkbox" id="new-bidet" checked class="w-4 h-4 accent-teal-600 rounded">
-                        <span>💧 มีสายฉีดชำระ</span>
+                        <span id="label-bidet">💧 มีสายฉีดชำระ</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer text-xs sm:text-sm font-medium">
                         <input type="checkbox" id="new-tissue" checked class="w-4 h-4 accent-teal-600 rounded">
-                        <span>🧻 มีทิชชู่</span>
+                        <span id="label-tissue">🧻 มีทิชชู่</span>
                     </label>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">รีวิวเพิ่มเติม (ข้อดี / ข้อเสีย)</label>
-                    <textarea id="new-detail" placeholder="เช่น แอร์เย็นฉ่ำ, สะอาดมาก, คนน้อย, ต้องแลกเหรียญ..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 h-20 resize-none focus:outline-none focus:border-teal-500"></textarea>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1" id="label-detail">รีวิวเพิ่มเติม</label>
+                    <textarea id="new-detail" maxlength="300" placeholder="เช่น แอร์เย็นฉ่ำ, สะอาดมาก..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 h-20 resize-none focus:outline-none focus:border-teal-500"></textarea>
                 </div>
 
-                <p class="text-[11px] text-teal-600 dark:text-teal-400" id="modal-coords-text">📍 พิกัดที่จะบันทึก: อิงตามหมุดบนแผนที่</p>
+                <p class="text-[11px] text-teal-600 dark:text-teal-400" id="modal-coords-text">📍 พิกัด: อิงตามหมุดบนแผนที่</p>
             </div>
 
             <div class="flex gap-2 mt-2">
-                <button onclick="closeAddModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-medium cursor-pointer">ยกเลิก</button>
-                <button onclick="saveToiletToFirebase()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer">บันทึกข้อมูลขึ้นระบบ</button>
+                <button onclick="closeAddModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-medium cursor-pointer" id="modal-cancel-btn">ยกเลิก</button>
+                <button id="save-toilet-btn" onclick="saveToiletToFirebase()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer" id="modal-save-btn">บันทึกข้อมูลขึ้นระบบ</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: แจ้งบั๊ก / ส่งฟีดแบ็ก -->
-    <div id="feedback-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 backdrop-blur-xs">
+    <!-- Modal: แจ้งบั๊ก -->
+    <div id="feedback-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 backdrop-blur-xs" onclick="if(event.target === this) closeFeedbackModal()">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-3.5">
             <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2.5">
-                <h3 class="font-bold text-base text-gray-800 dark:text-white flex items-center gap-1.5"><span>🐞</span> แจ้งบั๊ก / ส่งฟีดแบ็ก</h3>
-                <button onclick="closeFeedbackModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer">✕</button>
+                <h3 class="font-bold text-base text-gray-800 dark:text-white flex items-center gap-1.5" id="fb-modal-title"><span>🐞</span> แจ้งบั๊ก / ส่งฟีดแบ็ก</h3>
+                <button onclick="closeFeedbackModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold cursor-pointer" aria-label="Close">✕</button>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">พบปัญหาปุ่มกดไม่ติด แผนที่ไม่ขยับ หรืออยากให้เพิ่มฟีเจอร์อะไร พิมพ์บอกทีมงานผู้พิทักษ์ได้เลยครับ</p>
-            <textarea id="feedback-text" placeholder="พิมพ์ข้อความแจ้งบั๊ก หรือข้อเสนอแนะตรงนี้..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm h-28 resize-none focus:outline-none focus:border-teal-500"></textarea>
+            <p class="text-xs text-gray-500 dark:text-gray-400" id="fb-modal-desc">พบปัญหาปุ่มกดไม่ติด แผนที่ไม่ขยับ พิมพ์บอกทีมงานผู้พิทักษ์ได้เลยครับ</p>
+            <textarea id="feedback-text" maxlength="500" placeholder="พิมพ์ข้อความแจ้งบั๊ก..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm h-28 resize-none focus:outline-none focus:border-teal-500"></textarea>
             <div class="flex gap-2">
-                <button onclick="closeFeedbackModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-medium cursor-pointer">ปิด</button>
-                <button onclick="submitFeedbackToFirebase()" class="flex-1 bg-gray-900 dark:bg-teal-600 hover:bg-black dark:hover:bg-teal-700 text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer">ส่งข้อมูล</button>
+                <button onclick="closeFeedbackModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-medium cursor-pointer" id="fb-close-btn">ปิด</button>
+                <button id="submit-fb-btn" onclick="submitFeedbackToFirebase()" class="flex-1 bg-gray-900 dark:bg-teal-600 hover:bg-black text-white py-2.5 rounded-xl text-sm font-bold shadow cursor-pointer" id="fb-submit-btn">ส่งข้อมูล</button>
             </div>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet JS with SRI -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Firebase SDKs & Logic -->
     <script type="module">
@@ -254,19 +242,34 @@
 
         let currentUser = null;
 
+        // Toast Notification Function
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'error' ? 'bg-red-600 text-white' : 'bg-teal-700 text-white';
+            toast.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg text-xs sm:text-sm font-semibold pointer-events-auto flex items-center gap-2 transform translate-y-2 opacity-0 transition-all duration-300`;
+            toast.innerHTML = `<span>${type === 'error' ? '❌' : '🎉'}</span> <span>${esc(message)}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
         window.handleLogin = function() {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    console.log("ล็อกอินสำเร็จ:", result.user.displayName);
-                })
-                .catch((error) => {
-                    console.error("Login Error:", error);
-                    alert("❌ ล็อกอินไม่สำเร็จ (" + error.code + ")\nกรุณาตรวจสอบว่าไม่ได้เปิดเว็บผ่านแอป LINE/Facebook หรือปิดตัวบล็อกป๊อปอัปครับ");
-                });
+            signInWithPopup(auth, provider).catch((error) => {
+                console.error("Login Error:", error);
+                showToast("ล็อกอินไม่สำเร็จ ตรวจสอบป๊อปอัปเบราว์เซอร์", "error");
+            });
         };
 
         window.handleLogout = function() {
-            signOut(auth).then(() => alert("ออกจากระบบเรียบร้อยครับ"));
+            signOut(auth).then(() => showToast("ออกจากระบบเรียบร้อย"));
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -275,7 +278,7 @@
             if (user) {
                 authSection.innerHTML = `
                     <div class="flex items-center gap-2">
-                        <img src="${user.photoURL || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230d9488\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'></path><circle cx=\'12\' cy=\'7\' r=\'4\'></circle></svg>'}" alt="Avatar" class="w-8 h-8 rounded-full border border-white object-cover shadow">
+                        <img src="${user.photoURL || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230d9488\' stroke-width=\'2\'><path d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'></path><circle cx=\'12\' cy=\'7\' r=\'4\'></circle></svg>'}" alt="Avatar" class="w-8 h-8 rounded-full border border-white object-cover shadow">
                         <button onclick="handleLogout()" class="text-[10px] text-white bg-red-500 px-2 py-1 rounded-lg hover:bg-red-600 cursor-pointer">ออก</button>
                     </div>
                 `;
@@ -292,22 +295,28 @@
             return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         };
 
+        // Anti-spam & Validation Save
         window.saveToiletToFirebase = function() {
-            const name = document.getElementById('new-name').value.trim();
+            const nameInput = document.getElementById('new-name');
+            const name = nameInput.value.trim();
             const rating = parseFloat(document.getElementById('new-rating').value);
             const bidet = document.getElementById('new-bidet').checked;
             const tissue = document.getElementById('new-tissue').checked;
             const detail = document.getElementById('new-detail').value.trim();
+            const saveBtn = document.getElementById('save-toilet-btn');
 
             if (!name) {
-                alert("รบกวนใส่ชื่อสถานที่หรือห้องน้ำก่อนนะครับ!");
+                showToast("กรุณาใส่ชื่อสถานที่หรือห้องน้ำก่อนครับ!", "error");
                 return;
             }
 
             if (!currentUser) {
-                alert("⚠️ กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ เพื่อความปลอดภัยของข้อมูลคอมมูนิตี้ครับ!");
+                showToast("กรุณากด 'เข้าสู่ระบบ' ด้วย Google ก่อนเพิ่มห้องน้ำ!", "error");
                 return;
             }
+
+            saveBtn.disabled = true;
+            saveBtn.innerText = "กำลังบันทึก...";
 
             const toiletsRef = ref(db, 'toilets');
             push(toiletsRef, {
@@ -321,33 +330,45 @@
                 addedBy: currentUser.displayName || "ผู้พิทักษ์",
                 timestamp: Date.now()
             }).then(() => {
-                alert("🎉 บันทึกข้อมูลห้องน้ำสำเร็จ! ขอบคุณผู้พิทักษ์ที่ร่วมแชร์ข้อมูลให้ทุกคนครับ 🙏");
-                document.getElementById('new-name').value = '';
+                showToast("บันทึกข้อมูลห้องน้ำสำเร็จ!");
+                nameInput.value = '';
                 document.getElementById('new-detail').value = '';
                 window.closeAddModal();
             }).catch((error) => {
-                alert("❌ เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                showToast("เกิดข้อผิดพลาด: " + error.message, "error");
+            }).finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerText = "บันทึกข้อมูลขึ้นระบบ";
             });
         };
 
         window.submitFeedbackToFirebase = function() {
-            const text = document.getElementById('feedback-text').value.trim();
+            const textInput = document.getElementById('feedback-text');
+            const text = textInput.value.trim();
+            const submitBtn = document.getElementById('submit-fb-btn');
+
             if (!text) {
-                alert("รบกวนพิมพ์ข้อความแจ้งบั๊กหรือฟีดแบ็กก่อนกดส่งนะครับ!");
+                showToast("กรุณาพิมพ์ข้อความฟีดแบ็กก่อนกดส่งครับ!", "error");
                 return;
             }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "กำลังส่ง...";
 
             const feedbackRef = ref(db, 'feedbacks');
             push(feedbackRef, {
                 message: text,
-                user: currentUser ? currentUser.displayName : "ผู้พิทักษ์ผู้ทดสอบ",
+                user: currentUser ? currentUser.displayName : "ผู้ทดสอบระบบ",
                 timestamp: Date.now()
             }).then(() => {
-                alert("🙏 ขอบคุณมากๆ ครับผู้พิทักษ์! เราได้รับข้อมูลแจ้งบั๊ก/ฟีดแบ็กของคุณเรียบร้อยแล้ว ทีมงานจะรีบนำไปพัฒนาให้ดียิ่งขึ้นครับ!");
-                document.getElementById('feedback-text').value = '';
+                showToast("ขอบคุณสำหรับฟีดแบ็กครับ!");
+                textInput.value = '';
                 window.closeFeedbackModal();
             }).catch((error) => {
-                alert("❌ ส่งข้อมูลไม่สำเร็จ: " + error.message);
+                showToast("ส่งข้อมูลไม่สำเร็จ: " + error.message, "error");
+            }).finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "ส่งข้อมูล";
             });
         };
 
@@ -359,7 +380,7 @@
                 Object.keys(data).forEach((key) => {
                     const item = data[key];
                     const lat = Number(item.lat), lng = Number(item.lng);
-                    if (item && item.name && isFinite(lat) && isFinite(lng)) {
+                    if (item && item.name && isFinite(lat) && isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
                         window.allToilets.push({ 
                             id: key, 
                             name: item.name,
@@ -416,12 +437,10 @@
                 });
 
                 map.on('click', function(e) {
-                    const lat = e.latlng.lat;
-                    const lng = e.latlng.lng;
-                    window.currentLat = lat;
-                    window.currentLng = lng;
-                    userMarker.setLatLng([lat, lng]);
-                    updateLocationStatus(lat, lng);
+                    window.currentLat = e.latlng.lat;
+                    window.currentLng = e.latlng.lng;
+                    userMarker.setLatLng([window.currentLat, window.currentLng]);
+                    updateLocationStatus(window.currentLat, window.currentLng);
                 });
             } else {
                 map.setView([lat, lng], 15);
@@ -440,6 +459,8 @@
                 iconAnchor: [16, 16]
             });
 
+            let lang = localStorage.getItem('lang') || 'th';
+
             toilets.forEach(t => {
                 if (t.lat && t.lng) {
                     const m = L.marker([t.lat, t.lng], { icon: savedIcon }).addTo(savedMarkersLayer);
@@ -447,14 +468,14 @@
                         <div style="font-family: 'Fredoka', 'Mali', sans-serif; min-width: 170px; padding: 4px;">
                             <strong style="font-size: 14px; color: #0d9488;">${esc(t.name)}</strong><br>
                             <div style="margin: 4px 0;">
-                                <span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">⭐ ${Number(t.rating).toFixed(1)} ดาว</span>
+                                <span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px;">⭐ ${Number(t.rating).toFixed(1)} ${lang === 'th' ? 'ดาว' : 'Stars'}</span>
                             </div>
                             <p style="font-size: 11px; color: #4b5563; margin: 4px 0;">💬 ${esc(t.detail || '-')}</p>
                             <div style="font-size: 11px; margin: 6px 0; display: flex; gap: 4px;">
-                                <span style="background: ${t.bidet ? '#ccfbf1' : '#f3f4f6'}; color: ${t.bidet ? '#0f766e' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.bidet ? '💧มีสายฉีด' : '❌ไม่มีสายฉีด'}</span>
-                                <span style="background: ${t.tissue ? '#e0f2fe' : '#f3f4f6'}; color: ${t.tissue ? '#0369a1' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.tissue ? '🧻มีทิชชู่' : '❌ไม่มีทิชชู่'}</span>
+                                <span style="background: ${t.bidet ? '#ccfbf1' : '#f3f4f6'}; color: ${t.bidet ? '#0f766e' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.bidet ? (lang==='th'?'💧มีสายฉีด':'💧Bidet') : (lang==='th'?'❌ไม่มีสายฉีด':'❌No Bidet')}</span>
+                                <span style="background: ${t.tissue ? '#e0f2fe' : '#f3f4f6'}; color: ${t.tissue ? '#0369a1' : '#9ca3af'}; padding: 2px 5px; border-radius: 4px;">${t.tissue ? (lang==='th'?'🧻มีทิชชู่':'🧻Tissue') : (lang==='th'?'❌ไม่มีทิชชู่':'❌No Tissue')}</span>
                             </div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; margin-top:8px; background:#0d9488; color:white; padding:5px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">🧭 เปิดนำทาง Google Maps</a>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; margin-top:8px; background:#0d9488; color:white; padding:5px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:bold;">🧭 ${lang === 'th' ? 'เปิดนำทาง Google Maps' : 'Navigate'}</a>
                         </div>
                     `;
                     m.bindPopup(popupContent);
@@ -466,24 +487,20 @@
             const R = 6371;
             const dLat = deg2rad(lat2 - lat1);
             const dLon = deg2rad(lon2 - lon1);
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            return R * c;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
-        function deg2rad(deg) {
-            return deg * (Math.PI/180);
-        }
+        function deg2rad(deg) { return deg * (Math.PI/180); }
 
         window.renderToiletList = function(toilets) {
             const listEl = document.getElementById('toilet-list');
+            let lang = localStorage.getItem('lang') || 'th';
+
             if (!toilets || toilets.length === 0) {
                 listEl.innerHTML = `
                     <div class="text-center py-6 bg-gray-50 dark:bg-gray-900 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">ยังไม่มีข้อมูลห้องน้ำในระบบ คลิกบนแผนที่หรือกด <strong>"+ เพิ่มห้องน้ำ"</strong> เพื่อประเดิมหมุดแรกได้เลย!</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${lang === 'th' ? 'ยังไม่มีข้อมูลห้องน้ำในระบบ คลิกบนแผนที่หรือกด <strong>"+ เพิ่มห้องน้ำ"</strong> เพื่อประเดิมหมุดแรก!' : 'No restrooms found. Click map or <strong>"+ Add"</strong> to start.'}</p>
                     </div>
                 `;
                 return;
@@ -497,7 +514,7 @@
             toiletsWithDist.sort((a, b) => a.distance - b.distance);
 
             listEl.innerHTML = toiletsWithDist.map((t, index) => {
-                const distText = t.distance < 1 ? `${(t.distance * 1000).toFixed(0)} เมตร` : `${t.distance.toFixed(1)} กม.`;
+                const distText = t.distance < 1 ? `${(t.distance * 1000).toFixed(0)} ${lang === 'th' ? 'เมตร' : 'm'}` : `${t.distance.toFixed(1)} ${lang === 'th' ? 'กม.' : 'km.'}`;
                 const isNearest = index === 0;
 
                 return `
@@ -505,11 +522,11 @@
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex items-start gap-2.5">
                                 <span class="text-sm font-bold ${isNearest ? 'text-teal-600 dark:text-teal-400' : 'text-gray-400'} mt-0.5">
-                                    ${isNearest ? '📍 ใกล้คุณสุด' : `#${index + 1}`}
+                                    ${isNearest ? (lang === 'th' ? '📍 ใกล้หมุดสุด' : '📍 Nearest') : `#${index + 1}`}
                                 </span>
                                 <div>
                                     <h4 class="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100">${esc(t.name)}</h4>
-                                    <p class="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-0.5">📍 ห่างจากคุณประมาณ ${distText}</p>
+                                    <p class="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-0.5">${lang === 'th' ? '📍 ห่างจากหมุดประมาณ' : '📍 Approx'} ${distText}</p>
                                     <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">💬 ${esc(t.detail)}</p>
                                 </div>
                             </div>
@@ -518,18 +535,18 @@
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/60 dark:border-gray-800">
                             <div class="flex gap-1.5 text-[11px]">
                                 <span class="${t.bidet ? 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
-                                    ${t.bidet ? '💧 มีสายฉีด' : '❌ ไม่มีสายฉีด'}
+                                    ${t.bidet ? (lang==='th'?'💧 มีสายฉีด':'💧 Bidet') : (lang==='th'?'❌ ไม่มีสายฉีด':'❌ No Bidet')}
                                 </span>
                                 <span class="${t.tissue ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
-                                    ${t.tissue ? '🧻 มีทิชชู่' : '❌ ไม่มีทิชชู่'}
+                                    ${t.tissue ? (lang==='th'?'🧻 มีทิชชู่':'🧻 Tissue') : (lang==='th'?'❌ ไม่มีทิชชู่':'❌ No Tissue')}
                                 </span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <button onclick="map.setView([${t.lat}, ${t.lng}], 17); document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
-                                    📍 ดูหมุด
+                                    ${lang === 'th' ? '📍 ดูหมุด' : '📍 View'}
                                 </button>
                                 <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
-                                    🧭 นำทาง
+                                    🧭 ${lang === 'th' ? 'นำทาง' : 'Navigate'}
                                 </a>
                             </div>
                         </div>
@@ -556,7 +573,7 @@
             statusText.innerText = lang === 'th' 
                 ? `✅ พิกัดหมุดปัจจุบัน: ${lat.toFixed(4)}, ${lng.toFixed(4)}` 
                 : `✅ Current Pin: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-            renderToiletList(window.allToilets);
+            filterToilets(); // คงผลการเสิร์ชเดิมไว้ตอนย้ายหมุด
         }
 
         function getCurrentLocation() {
@@ -564,20 +581,19 @@
             const lang = localStorage.getItem('lang') || 'th';
             
             if (!navigator.geolocation) {
-                alert(lang === 'th' ? 'เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง' : 'Geolocation not supported');
+                showToast(lang === 'th' ? 'เบราว์เซอร์ไม่รองรับ GPS' : 'Geolocation not supported', 'error');
                 return;
             }
-            statusText.innerText = lang === 'th' ? '🔄 กำลังดึงพิกัด GPS จากอุปกรณ์...' : '🔄 Locating GPS...';
+            statusText.innerText = lang === 'th' ? '🔄 กำลังดึงพิกัด GPS...' : '🔄 Locating GPS...';
             
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    initMap(lat, lng);
-                    updateLocationStatus(lat, lng);
+                    initMap(position.coords.latitude, position.coords.longitude);
+                    updateLocationStatus(position.coords.latitude, position.coords.longitude);
                 },
                 () => {
-                    statusText.innerText = lang === 'th' ? '❌ ไม่สามารถดึงตำแหน่งได้ กรุณาเปิด GPS' : '❌ Unable to get location';
+                    statusText.innerText = lang === 'th' ? '❌ ไม่สามารถดึงตำแหน่งได้' : '❌ Unable to get location';
+                    showToast(lang === 'th' ? 'ไม่สามารถดึงตำแหน่ง GPS ได้' : 'Location error', 'error');
                 },
                 { enableHighAccuracy: true, timeout: 10000 }
             );
@@ -585,29 +601,21 @@
 
         function openNearestGoogleMapsNavigation() {
             const lang = localStorage.getItem('lang') || 'th';
-            
             if (!window.allToilets || window.allToilets.length === 0) {
-                alert(lang === 'th' ? '⚠️ ยังไม่มีข้อมูลห้องน้ำในระบบ กรุณาเพิ่มห้องน้ำอย่างน้อย 1 แห่งก่อนครับ!' : 'No restrooms available.');
+                showToast(lang === 'th' ? '⚠️ ยังไม่มีข้อมูลห้องน้ำในระบบ' : 'No restrooms available.', 'error');
                 return;
             }
-
             let nearest = window.allToilets[0];
             let minDistance = Infinity;
-
             window.allToilets.forEach(t => {
                 const dist = getDistanceFromLatLonInKm(window.currentLat, window.currentLng, t.lat, t.lng);
-                if (dist < minDistance) {
-                    minDistance = dist;
-                    nearest = t;
-                }
+                if (dist < minDistance) { minDistance = dist; nearest = t; }
             });
-
-            const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`;
-            window.open(gmapsUrl, '_blank', 'noopener,noreferrer');
+            window.open(`https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`, '_blank', 'noopener,noreferrer');
         }
 
         window.openAddModal = function() {
-            document.getElementById('modal-coords-text').innerText = `📍 พิกัดที่จะบันทึก: ${window.currentLat.toFixed(5)}, ${window.currentLng.toFixed(5)}`;
+            document.getElementById('modal-coords-text').innerText = `📍 พิกัด: ${window.currentLat.toFixed(5)}, ${window.currentLng.toFixed(5)}`;
             const m = document.getElementById('add-modal');
             m.classList.remove('hidden');
             m.classList.add('flex');
@@ -628,6 +636,13 @@
             m.classList.add('hidden');
             m.classList.remove('flex');
         };
+
+        function handleGlobalKeydown(e) {
+            if (e.key === 'Escape') {
+                closeAddModal();
+                closeFeedbackModal();
+            }
+        }
 
         function toggleDarkMode() {
             const html = document.documentElement;
@@ -652,9 +667,27 @@
                 pinBtn: "ตำแหน่งปัจจุบันของฉัน",
                 addBtn: "เพิ่มห้องน้ำที่หมุดนี้",
                 sosTitle: "🚨 ปวดฉุกเฉินด่วน!",
+                sosDesc: "พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที",
                 sosBtn: "⚡ นำทางไปห้องน้ำใกล้สุด!",
-                rankingTitle: "🏆 ห้องน้ำใกล้คุณและยอดเยี่ยมที่สุด",
-                reportBtn: "+ เพิ่มห้องน้ำ"
+                rankingTitle: "🏆 ห้องน้ำใกล้หมุดและยอดเยี่ยมที่สุด",
+                reportBtn: "+ เพิ่มห้องน้ำ",
+                fbBannerTitle: "🛠️ เจอบั๊ก หรือมีไอเดียอยากแนะนำ?",
+                fbBannerDesc: "ช่วยกันรายงานเพื่อให้เว็บของเหล่าผู้พิทักษ์ดียิ่งขึ้น",
+                fbBtnText: "แจ้งบั๊ก / ส่งฟีดแบ็ก",
+                mapHint: "💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที",
+                modalAddTitle: "เพิ่มพิกัดห้องน้ำใหม่",
+                labelName: "ชื่อสถานที่ / ห้องน้ำ *",
+                labelRating: "ให้คะแนนความสะอาด",
+                labelBidet: "💧 มีสายฉีดชำระ",
+                labelTissue: "🧻 มีทิชชู่",
+                labelDetail: "รีวิวเพิ่มเติม",
+                modalCancel: "ยกเลิก",
+                modalSave: "บันทึกข้อมูลขึ้นระบบ",
+                fbModalTitle: "แจ้งบั๊ก / ส่งฟีดแบ็ก",
+                fbModalDesc: "พบปัญหาปุ่มกดไม่ติด แผนที่ไม่ขยับ พิมพ์บอกทีมงานผู้พิทักษ์ได้เลยครับ",
+                fbClose: "ปิด",
+                fbSubmit: "ส่งข้อมูล",
+                loading: "🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล..."
             },
             en: {
                 brand: "Take a piss 🚻",
@@ -665,9 +698,27 @@
                 pinBtn: "My Current Location",
                 addBtn: "Add at This Pin",
                 sosTitle: "🚨 Emergency SOS!",
+                sosDesc: "Navigate to the nearest restroom immediately.",
                 sosBtn: "⚡ Navigate to Nearest!",
                 rankingTitle: "🏆 Nearby & Top Rated Restrooms",
-                reportBtn: "+ Add Restroom"
+                reportBtn: "+ Add Restroom",
+                fbBannerTitle: "🛠️ Found bugs or have ideas?",
+                fbBannerDesc: "Help us improve the guardian community app.",
+                fbBtnText: "Report Bug / Feedback",
+                mapHint: "💡 Tip: Tap or click anywhere on the map to move the 🚽 pin instantly.",
+                modalAddTitle: "Add New Restroom Pin",
+                labelName: "Restroom / Location Name *",
+                labelRating: "Cleanliness Rating",
+                labelBidet: "💧 Bidet available",
+                labelTissue: "🧻 Tissue available",
+                labelDetail: "Additional Review",
+                modalCancel: "Cancel",
+                modalSave: "Save to System",
+                fbModalTitle: "Report Bug / Feedback",
+                fbModalDesc: "Found a bug or have suggestions? Let our team know.",
+                fbClose: "Close",
+                fbSubmit: "Submit",
+                loading: "🔄 Loading restrooms from database..."
             }
         };
 
@@ -676,11 +727,16 @@
             let newLang = currentLang === 'th' ? 'en' : 'th';
             localStorage.setItem('lang', newLang);
             loadLanguage();
+            if (window.allToilets) {
+                renderToiletList(window.allToilets);
+                renderSavedMarkers(window.allToilets);
+            }
         }
 
         function loadLanguage() {
             let lang = localStorage.getItem('lang') || 'th';
             document.getElementById('lang-btn').innerText = lang === 'th' ? 'EN' : 'TH';
+            document.getElementById('page-title').innerText = lang === 'th' ? 'Take a piss 🚻 - ค้นหาและรีวิวห้องน้ำ' : 'Take a piss 🚻 - Restroom Finder';
             
             const t = translations[lang];
             document.getElementById('brand-name').innerText = t.brand;
@@ -689,11 +745,32 @@
             document.getElementById('pin-btn-text').innerText = t.pinBtn;
             document.getElementById('add-btn-text').innerText = t.addBtn;
             document.getElementById('sos-title').innerHTML = `<span>🚨</span> ${t.sosTitle.replace('🚨 ', '')}`;
+            document.getElementById('location-status').innerText = t.sosDesc;
             document.getElementById('sos-btn').innerText = t.sosBtn;
             document.getElementById('ranking-title').innerHTML = `<span>🏆</span> ${t.rankingTitle.replace('🏆 ', '')}`;
             document.getElementById('report-btn').innerText = t.reportBtn;
             document.getElementById('welcome-title').innerText = t.welcomeTitle;
             document.getElementById('welcome-desc').innerText = t.welcomeDesc;
+            document.getElementById('fb-banner-title').innerText = t.fbBannerTitle;
+            document.getElementById('fb-banner-desc').innerText = t.fbBannerDesc;
+            document.getElementById('fb-btn-text').innerText = t.fbBtnText;
+            document.getElementById('map-hint').innerText = t.mapHint;
+            document.getElementById('loading-text').innerText = t.loading;
+
+            // Modal texts
+            document.getElementById('modal-add-title').innerHTML = `<span>🚽</span> ${t.modalAddTitle}`;
+            document.getElementById('label-name').innerText = t.labelName;
+            document.getElementById('label-rating').innerText = t.labelRating;
+            document.getElementById('label-bidet').innerText = t.labelBidet;
+            document.getElementById('label-tissue').innerText = t.labelTissue;
+            document.getElementById('label-detail').innerText = t.labelDetail;
+            document.getElementById('modal-cancel-btn').innerText = t.modalCancel;
+            document.getElementById('save-toilet-btn').innerText = t.modalSave;
+
+            document.getElementById('fb-modal-title').innerHTML = `<span>🐞</span> ${t.fbModalTitle}`;
+            document.getElementById('fb-modal-desc').innerText = t.fbModalDesc;
+            document.getElementById('fb-close-btn').innerText = t.fbClose;
+            document.getElementById('submit-fb-btn').innerText = t.fbSubmit;
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -701,8 +778,8 @@
             loadLanguage();
             document.getElementById('dark-icon').innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
             if (window.allToilets) {
-                window.renderSavedMarkers(window.allToilets);
-                window.renderToiletList(window.allToilets);
+                renderSavedMarkers(window.allToilets);
+                renderToiletList(window.allToilets);
             }
         });
     </script>
