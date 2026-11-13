@@ -39,13 +39,13 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200" onkeydown="handleGlobalKeydown(event)">
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <!-- Toast Notification Container (Fixed for mobile overflow) -->
+    <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Header / Navbar -->
     <header class="bg-teal-600 dark:bg-teal-800 text-white shadow-md sticky top-0 z-40 transition-colors duration-200">
         <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-base sm:text-lg font-bold flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold flex items-center gap-2 cursor-pointer" onclick="switchView('map')">
                 <span class="text-xl">🚽</span>
                 <span id="brand-name">Take a piss 🚻</span>
             </h1>
@@ -56,9 +56,7 @@
                 <button onclick="toggleDarkMode()" class="bg-teal-700 dark:bg-teal-900 text-white p-2 rounded-full shadow hover:bg-teal-800 transition cursor-pointer" title="สลับโหมดมืด/สว่าง" aria-label="Toggle Dark Mode">
                     <span id="dark-icon">🌙</span>
                 </button>
-                <div id="auth-section">
-                    <!-- โหลดสถานะ Auth แบบไดนามิกผ่านฟังก์ชัน renderAuth -->
-                </div>
+                <div id="auth-section"></div>
             </div>
         </div>
     </header>
@@ -66,65 +64,88 @@
     <!-- Main Container -->
     <main class="max-w-2xl mx-auto w-full p-4 flex-1 flex flex-col gap-4">
         
-        <!-- Welcome Banner -->
-        <div class="bg-teal-50 dark:bg-gray-800 border border-teal-100 dark:border-gray-700 p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm transition-colors duration-200">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-3xl shadow-inner shrink-0 border border-teal-200 dark:border-teal-800">
-                🚽
+        <!-- View 1: Map & Home Dashboard -->
+        <div id="view-map-home" class="flex flex-col gap-4">
+            <!-- Welcome Banner -->
+            <div class="bg-teal-50 dark:bg-gray-800 border border-teal-100 dark:border-gray-700 p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm transition-colors duration-200">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-3xl shadow-inner shrink-0 border border-teal-200 dark:border-teal-800">
+                    🚽
+                </div>
+                <div>
+                    <h2 class="text-teal-900 dark:text-teal-300 font-bold text-sm sm:text-base" id="welcome-title">สวัสดีผู้พิทักษ์ความสะอาดทุกคน! 👋</h2>
+                    <p class="text-xs sm:text-sm text-teal-700 dark:text-gray-300" id="welcome-desc">คลิกบนแผนที่เพื่อย้ายหมุด หรือเพิ่มห้องน้ำสะอาดเพื่อคอมมูนิตี้ของเรา</p>
+                </div>
             </div>
-            <div>
-                <h2 class="text-teal-900 dark:text-teal-300 font-bold text-sm sm:text-base" id="welcome-title">สวัสดีผู้พิทักษ์ความสะอาดทุกคน! 👋</h2>
-                <p class="text-xs sm:text-sm text-teal-700 dark:text-gray-300" id="welcome-desc">คลิกบนแผนที่เพื่อย้ายหมุด หรือเพิ่มห้องน้ำสะอาดเพื่อคอมมูนิตี้ของเรา</p>
-            </div>
-        </div>
 
-        <!-- Search & Actions -->
-        <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-2.5 transition-colors duration-200">
-            <div class="flex gap-2">
-                <input type="text" id="search-box" onkeyup="filterToilets()" placeholder="ค้นหาชื่อห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
-                <button onclick="filterToilets()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer" id="search-btn">ค้นหา</button>
+            <!-- Search & Actions -->
+            <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-2.5 transition-colors duration-200">
+                <div class="flex gap-2">
+                    <input type="text" id="search-box" onkeyup="filterToilets()" placeholder="ค้นหาชื่อห้องน้ำ, ห้าง, ปั๊มน้ำมัน..." class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-gray-800 dark:text-gray-100">
+                    <button onclick="filterToilets()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer" id="search-btn">ค้นหา</button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <span>📍</span> <span id="pin-btn-text">ตำแหน่งปัจจุบันของฉัน</span>
+                    </button>
+                    <button onclick="openAddModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <span>➕</span> <span id="add-btn-text">เพิ่มห้องน้ำที่หมุดนี้</span>
+                    </button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="getCurrentLocation()" class="flex-1 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>📍</span> <span id="pin-btn-text">ตำแหน่งปัจจุบันของฉัน</span>
-                </button>
-                <button onclick="openAddModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>➕</span> <span id="add-btn-text">เพิ่มห้องน้ำที่หมุดนี้</span>
-                </button>
+
+            <!-- Interactive Map -->
+            <div class="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div id="map"></div>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
             </div>
-        </div>
 
-        <!-- Interactive Map -->
-        <div class="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <div id="map"></div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center mt-1.5" id="map-hint">💡 เคล็ดลับ: แตะหรือคลิกที่ตำแหน่งใดก็ได้บนแผนที่เพื่อย้ายหมุด 🚽 ทันที</p>
-        </div>
-
-        <!-- SOS Emergency Quick Action -->
-        <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all">
-            <div class="text-center sm:text-left">
-                <h2 class="text-lg sm:text-xl font-extrabold flex items-center justify-center sm:justify-start gap-2" id="sos-title">
-                    <span>🚨</span> ปวดฉุกเฉินด่วน!
-                </h2>
-                <p id="sos-desc" class="text-xs sm:text-sm text-red-100 mt-0.5">พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที</p>
-                <p id="location-status" class="text-[11px] text-red-200 mt-0.5">📍 พิกัดหมุดปัจจุบัน: 13.7563, 100.5018</p>
-            </div>
-            <button onclick="openNearestGoogleMapsNavigation()" class="w-full sm:w-auto bg-white text-red-600 font-black text-base px-6 py-3.5 rounded-xl shadow-md hover:bg-red-50 transition cursor-pointer active:scale-95 shrink-0" id="sos-btn">
-                ⚡ นำทางไปห้องน้ำใกล้สุด!
-            </button>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-3 transition-colors duration-200">
-            <div class="flex justify-between items-center">
-                <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5" id="ranking-title">
-                    <span>🏆</span> ห้องน้ำใกล้หมุดและยอดเยี่ยมที่สุด
-                </h3>
-                <button onclick="openAddModal()" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="report-btn">
-                    + เพิ่มห้องน้ำ
+            <!-- SOS Emergency Quick Action -->
+            <div class="bg-red-600 dark:bg-red-700 text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4 transition-all">
+                <div class="text-center sm:text-left">
+                    <h2 class="text-lg sm:text-xl font-extrabold flex items-center justify-center sm:justify-start gap-2" id="sos-title">
+                        <span>🚨</span> ปวดฉุกเฉินด่วน!
+                    </h2>
+                    <p id="sos-desc" class="text-xs sm:text-sm text-red-100 mt-0.5">พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที</p>
+                    <p id="location-status" class="text-[11px] text-red-200 mt-0.5">📍 พิกัดหมุดปัจจุบัน: 13.7563, 100.5018</p>
+                </div>
+                <button onclick="openNearestGoogleMapsNavigation()" class="w-full sm:w-auto bg-white text-red-600 font-black text-base px-6 py-3.5 rounded-xl shadow-md hover:bg-red-50 transition cursor-pointer active:scale-95 shrink-0" id="sos-btn">
+                    ⚡ นำทางไปห้องน้ำใกล้สุด!
                 </button>
             </div>
-            <div id="toilet-list" class="flex flex-col gap-2.5">
-                <div class="text-center py-6 text-xs text-gray-400" id="loading-text">🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล...</div>
+
+            <!-- Top 5 Nearest Restrooms Section -->
+            <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-3 transition-colors duration-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5" id="ranking-title">
+                        <span>🏆</span> 5 ห้องน้ำใกล้หมุดที่สุด
+                    </h3>
+                    <button onclick="switchView('leaderboard')" class="bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-100 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer" id="view-all-ranking-btn">
+                        👑 ดูตารางจัดอันดับทั้งหมด
+                    </button>
+                </div>
+                <div id="toilet-list" class="flex flex-col gap-2.5">
+                    <div class="text-center py-6 text-xs text-gray-400" id="loading-text">🔄 กำลังโหลดข้อมูลห้องน้ำ...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: Dedicated Leaderboard Page -->
+        <div id="view-leaderboard-page" class="hidden flex-col gap-4">
+            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-3">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                            <span>👑</span> <span id="lb-page-title">ตารางจัดอันดับห้องน้ำยอดเยี่ยม</span>
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" id="lb-page-desc">จัดอันดับตามคะแนนความสะอาดสูงสุดในระบบคอมมูนิตี้</p>
+                    </div>
+                    <button onclick="switchView('map')" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold px-3 py-2 rounded-xl hover:bg-gray-200 transition cursor-pointer" id="back-to-map-btn">
+                        ← กลับหน้าแผนที่
+                    </button>
+                </div>
+                <div id="leaderboard-full-list" class="flex flex-col gap-3">
+                    <!-- รายการจัดอันดับแบบเต็มหน้า -->
+                </div>
             </div>
         </div>
 
@@ -142,7 +163,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
-        Take a piss 🚻 Community V0.1.7 — Auditor Pro Edition
+        Take a piss 🚻 Community V0.1.8 — Leaderboard Edition
     </footer>
 
     <!-- Modal: เพิ่มห้องน้ำใหม่ -->
@@ -443,6 +464,7 @@
             }
             window.renderToiletList(window.allToilets);
             window.renderSavedMarkers(window.allToilets);
+            if (typeof renderLeaderboardPage === 'function') renderLeaderboardPage(window.allToilets);
         });
     </script>
 
@@ -457,6 +479,23 @@
         function detailText(d) {
             const lang = localStorage.getItem('lang') || 'th';
             return d || (lang === 'th' ? 'ไม่มีรายละเอียดเพิ่มเติม' : 'No additional details');
+        }
+
+        function switchView(viewName) {
+            const homeView = document.getElementById('view-map-home');
+            const lbView = document.getElementById('view-leaderboard-page');
+            if (viewName === 'leaderboard') {
+                homeView.classList.add('hidden');
+                lbView.classList.remove('hidden');
+                lbView.classList.add('flex');
+                if (window.allToilets) renderLeaderboardPage(window.allToilets);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                lbView.classList.add('hidden');
+                lbView.classList.remove('flex');
+                homeView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         function initMap(lat = 13.7563, lng = 100.5018) {
@@ -546,6 +585,7 @@
 
         function deg2rad(deg) { return deg * (Math.PI/180); }
 
+        // แสดงผลหน้าแรก: เอาเฉพาะ 5 อันดับแรกที่ใกล้ที่สุด
         window.renderToiletList = function(toilets) {
             const listEl = document.getElementById('toilet-list');
             let lang = localStorage.getItem('lang') || 'th';
@@ -565,8 +605,9 @@
             });
 
             toiletsWithDist.sort((a, b) => a.distance - b.distance);
+            const top5Toilets = toiletsWithDist.slice(0, 5); // เอาแค่ 1-5 อันดับแรก
 
-            listEl.innerHTML = toiletsWithDist.map((t, index) => {
+            listEl.innerHTML = top5Toilets.map((t, index) => {
                 const distText = t.distance < 1 ? `${(t.distance * 1000).toFixed(0)} ${lang === 'th' ? 'เมตร' : 'm'}` : `${t.distance.toFixed(1)} ${lang === 'th' ? 'กม.' : 'km.'}`;
                 const isNearest = index === 0;
                 const finalDetail = detailText(t.detail);
@@ -596,11 +637,67 @@
                                 </span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <button onclick="map.setView([${t.lat}, ${t.lng}], 17); document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                                <button onclick="switchView('map'); map.setView([${t.lat}, ${t.lng}], 17); document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
                                     ${lang === 'th' ? '📍 ดูหมุด' : '📍 View'}
                                 </button>
                                 <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
                                     🧭 ${lang === 'th' ? 'นำทาง' : 'Navigate'}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // แสดงผลหน้า Leaderboard แบบเต็มหน้าเพจ (จัดอันดับตามเรตติ้งสูงสุด)
+        window.renderLeaderboardPage = function(toilets) {
+            const lbListEl = document.getElementById('leaderboard-full-list');
+            let lang = localStorage.getItem('lang') || 'th';
+
+            if (!toilets || toilets.length === 0) {
+                lbListEl.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">${lang === 'th' ? 'ยังไม่มีข้อมูลห้องน้ำ' : 'No restrooms available.'}</p>`;
+                return;
+            }
+
+            // เรียงตามดาวสูงสุด (Rating)
+            const sortedByRating = [...toilets].sort((a, b) => b.rating - a.rating);
+
+            lbListEl.innerHTML = sortedByRating.map((t, index) => {
+                const finalDetail = detailText(t.detail);
+                const rankBadge = index === 0 ? '👑 อันดับ 1' : index === 1 ? '🥈 อันดับ 2' : index === 2 ? '🥉 อันดับ 3' : `#${index + 1}`;
+
+                return `
+                    <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 flex flex-col gap-2">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex items-start gap-3">
+                                <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 shrink-0">
+                                    ${rankBadge}
+                                </span>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-100">${esc(t.name)}</h4>
+                                    <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200/50 dark:border-gray-700">
+                                        💬 "${esc(finalDetail)}"
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs font-bold px-2.5 py-1 rounded-lg shrink-0">⭐ ${Number(t.rating).toFixed(1)}</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200/60 dark:border-gray-800">
+                            <div class="flex gap-1.5 text-[11px]">
+                                <span class="${t.bidet ? 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
+                                    ${t.bidet ? (lang==='th'?'💧 มีสายฉีด':'💧 Bidet') : (lang==='th'?'❌ ไม่มีสายฉีด':'❌ No Bidet')}
+                                </span>
+                                <span class="${t.tissue ? 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500'} px-2 py-0.5 rounded-md font-medium">
+                                    ${t.tissue ? (lang==='th'?'🧻 มีทิชชู่':'🧻 Tissue') : (lang==='th'?'❌ ไม่มีทิชชู่':'❌ No Tissue')}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="switchView('map'); map.setView([${t.lat}, ${t.lng}], 17); document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                                    📍 ดูพิกัดบนแผนที่
+                                </button>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1">
+                                    🧭 นำทาง Google Maps
                                 </a>
                             </div>
                         </div>
@@ -722,7 +819,8 @@
                 sosTitle: "🚨 ปวดฉุกเฉินด่วน!",
                 sosDesc: "พุ่งตรงไปห้องน้ำใกล้ที่สุดบน Google Maps ทันที",
                 sosBtn: "⚡ นำทางไปห้องน้ำใกล้สุด!",
-                rankingTitle: "🏆 ห้องน้ำใกล้หมุดและยอดเยี่ยมที่สุด",
+                rankingTitle: "🏆 5 ห้องน้ำใกล้หมุดที่สุด",
+                viewAllRankingBtn: "👑 ดูตารางจัดอันดับทั้งหมด",
                 reportBtn: "+ เพิ่มห้องน้ำ",
                 fbBannerTitle: "🛠️ เจอบั๊ก หรือมีไอเดียอยากแนะนำ?",
                 fbBannerDesc: "ช่วยกันรายงานเพื่อให้เว็บของเหล่าผู้พิทักษ์ดียิ่งขึ้น",
@@ -748,7 +846,10 @@
                 fbPlaceholder: "พิมพ์ข้อความแจ้งบั๊ก...",
                 fbClose: "ปิด",
                 fbSubmit: "ส่งข้อมูล",
-                loading: "🔄 กำลังโหลดข้อมูลห้องน้ำจากฐานข้อมูล..."
+                loading: "🔄 กำลังโหลดข้อมูลห้องน้ำ...",
+                lbPageTitle: "ตารางจัดอันดับห้องน้ำยอดเยี่ยม",
+                lbPageDesc: "จัดอันดับตามคะแนนความสะอาดสูงสุดในระบบคอมมูนิตี้",
+                backToMapBtn: "← กลับหน้าแผนที่"
             },
             en: {
                 brand: "Take a piss 🚻",
@@ -761,7 +862,8 @@
                 sosTitle: "🚨 Emergency SOS!",
                 sosDesc: "Navigate to the nearest restroom immediately.",
                 sosBtn: "⚡ Navigate to Nearest!",
-                rankingTitle: "🏆 Nearby & Top Rated Restrooms",
+                rankingTitle: "🏆 Top 5 Nearest Restrooms",
+                viewAllRankingBtn: "👑 View All Leaderboard",
                 reportBtn: "+ Add Restroom",
                 fbBannerTitle: "🛠️ Found bugs or have ideas?",
                 fbBannerDesc: "Help us improve the guardian community app.",
@@ -787,7 +889,10 @@
                 fbPlaceholder: "Type bug message...",
                 fbClose: "Close",
                 fbSubmit: "Submit",
-                loading: "🔄 Loading restrooms from database..."
+                loading: "🔄 Loading restrooms...",
+                lbPageTitle: "Top Rated Restrooms Leaderboard",
+                lbPageDesc: "Ranked by highest cleanliness scores in the community.",
+                backToMapBtn: "← Back to Map"
             }
         };
 
@@ -800,6 +905,7 @@
             if (window.allToilets) {
                 renderToiletList(window.allToilets);
                 renderSavedMarkers(window.allToilets);
+                renderLeaderboardPage(window.allToilets);
             }
         }
 
@@ -818,6 +924,7 @@
             document.getElementById('sos-desc').innerText = t.sosDesc;
             document.getElementById('sos-btn').innerText = t.sosBtn;
             document.getElementById('ranking-title').innerHTML = `<span>🏆</span> ${t.rankingTitle.replace('🏆 ', '')}`;
+            document.getElementById('view-all-ranking-btn').innerText = t.viewAllRankingBtn;
             document.getElementById('report-btn').innerText = t.reportBtn;
             document.getElementById('welcome-title').innerText = t.welcomeTitle;
             document.getElementById('welcome-desc').innerText = t.welcomeDesc;
@@ -826,6 +933,11 @@
             document.getElementById('fb-btn-text').innerText = t.fbBtnText;
             document.getElementById('map-hint').innerText = t.mapHint;
             document.getElementById('loading-text').innerText = t.loading;
+
+            // Leaderboard page texts
+            document.getElementById('lb-page-title').innerText = t.lbPageTitle;
+            document.getElementById('lb-page-desc').innerText = t.lbPageDesc;
+            document.getElementById('back-to-map-btn').innerText = t.backToMapBtn;
 
             document.getElementById('modal-add-title').innerHTML = `<span>🚽</span> ${t.modalAddTitle}`;
             document.getElementById('label-name').innerText = t.labelName;
@@ -863,6 +975,7 @@
             if (window.allToilets) {
                 renderSavedMarkers(window.allToilets);
                 renderToiletList(window.allToilets);
+                renderLeaderboardPage(window.allToilets);
             }
         });
     </script>
